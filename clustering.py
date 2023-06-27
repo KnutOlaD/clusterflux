@@ -1,5 +1,9 @@
 '''
-Functions and initation for clustering techniques of flare data
+Functions and initation for clustering techniques of flare data.
+Requires the utm package. Install with pip install utm or 
+conda install -c conda-forge utm
+conda install -c "conda-forge/label/cf201901" utm
+conda install -c "conda-forge/label/cf202003" utm
 
 Author: Knut Ola Dølven, knut.o.dolven@uit.no (c) 2023
 
@@ -22,16 +26,16 @@ A Wolfram Web Resource. http://mathworld.wolfram.com/Circle-CircleIntersection.h
 get_area_of_footprint: Calculates the area of the footprint of the acoustic beam of the SB echosounder at
 a specified depth. The function returns the area of the footprint.
 
-cluster_flares_mario: Clusters flares that have overlapping areas/are within a certain distance of each other
-(this is done through a different function) and calculates the total area and flowrate
-of each cluster. The function returns a dictionary with the cluster info. Based on method described in
-Veloso et al., 2015, doi: 10.1002/lom3.10024
-
 get_close_flares: Finds all the flares that are within a certain distance of each other or shares a certain
 amount of area. The function use UTM x an y or lan/lot coordinates and footprint radius
 to return a list of pairs with indices of flares that are defined as close to each other
 according to the closeness_param and threshold parameters. Can calculate closeness based
 on distance between footprint center or the fractional (%) shared area between the footprints.
+
+cluster_flares_mario: Clusters flares that have overlapping areas/are within a certain distance of each other
+(this is done through get_close_flares) and calculates the total area and flowrate
+of each cluster. The function returns a dictionary with the cluster info. Based on method described in
+Veloso et al., 2015, doi: 10.1002/lom3.10024
 
 save_clustered_data: Creates a dataframe with clustered flares and their locations and flowrates together with
 the flares that were not clustered as individual clusters. Saves the dataframe to an excel file
@@ -301,6 +305,97 @@ def get_area_of_footprint(depth,angle):
 
 ###############################################################################################
 
+def get_close_flares(xloc_or_lat,
+                     yloc_or_lon,
+                     radius,
+                     threshold = 0.2,
+                     UTM_zone = 33,
+                     lonlat_coord = False,
+                     closeness_param = 'area'):
+    
+    '''
+    Finds all the flares that are within a certain distance of each other or shares a certain
+    amount of area. The function use UTM x an y or lan/lot coordinates and footprint radius 
+    to return a list of pairs with indices of flares that are defined as close to each other 
+    according to the closeness_param and threshold parameters. Can calculate closeness based 
+    on distance between footprint center or the fractional (%) shared area between the footprints.
+
+    Input:
+    xloc_or_lat: numpy array
+        The x locations of the flares that have at least one overlapping flare, or the latitudes
+        of the flares if lonlat_coord = True.
+    yloc_or_lon: numpy array
+        The y locations of the flares that have at least one overlapping flare, or the longitudes
+        of the flares if lonlat_coord = True.
+    radius: numpy array
+        The radius of the flares.
+    threshold: float
+        The threshold for the overlap between two flares to be clustered. If closeness_param = 'area'
+        the threshold is the fractional (between 0 and 1) overlap between the flares. If closeness_param = 'distance'
+        the threshold is the distance between the flares number of flare footprint radii (Veloso et al., 
+        2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
+        Default: 0.2
+    UTM_zone: int
+        The UTM zone where the flares are located
+        Default: 33
+    lonlat_coord: boolean
+        If True the function uses the lon/lat coordinates of the flares instead of the UTM x and y
+        coordinates. Recalculates the input lon/lat coorinates to UTM x and y coordinates.
+
+    Output:
+    indices: numpy array
+        A list of pairs with indices of flares that are defined as close to each other according to
+        the closeness_param and threshold parameters.
+    '''
+    #check if the input coordinates are lon/lat or UTM x/y and convert to utm if 
+    #lonlat_coord == True
+    if lonlat_coord == True:
+        [xloc_or_lat,yloc_or_lon] = utm.from_latlon(xloc_or_lat,yloc_or_lon,UTM_zone,'U')
+    
+    #Calculate and create a matrix with the distance between all the flares
+    flare_dists = get_distance(xloc_or_lat,yloc_or_lon)
+
+    #Get the close flares if closeness_param == 'distance'
+    if closeness_param == 'distance':
+        #Find the indices of the flares that are within the threshold distance of each other
+        #which is given by the threshold*radius
+        indices = np.transpose(np.where(flare_dists < threshold*radius))
+        #Remove all diagonal matches (where indices[i,:] is the same number)
+        indices = indices[indices[:,0] != indices[:,1],:]
+
+    #Get the close flares if closeness_param == 'area'
+    if closeness_param == 'area':
+        #Calculate the area of the footprint of each flare
+        flare_areas = np.pi*radius**2
+        #Create a matrix with the shared area between all the flares in the dataset
+        flare_shared_areas = np.zeros((len(xloc_or_lat),len(xloc_or_lat)))
+        for i in range(len(xloc_or_lat)):
+            for j in range(len(xloc_or_lat)):
+                flare_shared_areas[i,j] = get_shared_area(xloc_or_lat[i],
+                xloc_or_lat[j],yloc_or_lon[i],yloc_or_lon[j],radius[i],
+                radius[j])
+        #Divide the flare_shared_areas with the flare_areas to get the fraction of 
+        #the area that is shared between the flares
+        frac_flare_shared_areas = flare_shared_areas*(1./flare_areas)
+        #Find the indices of the flares that overlap with at least the overlap threshold 
+        #of their area
+        indices = np.transpose(np.where(frac_flare_shared_areas > threshold))
+
+    #Find repeated and/or mirrored pairs in the indices array
+    #Find the indices of the repeated pairs
+    i = 0
+    while i <= len(indices):
+        if i == len(indices):
+            break
+        repeated_index=(np.where((indices[:,0] == indices[i,1]) & (indices[:,1] == indices[i,0])))
+        i = i+1
+        #Remove the repeated pairs
+        indices = np.delete(indices,repeated_index,0)
+    
+    return indices
+
+###############################################################################################
+
 def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
     '''
     Clusters flares that have overlapping areas/are within a certain distance of each other
@@ -423,7 +518,6 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
         plt.imshow(grid)
         plt.show()
         
-        
         #sum up all the ones in the grid to get the total area covered by the flares
         clusters['area'][i] = np.sum(grid)*grid_spacing**2
     
@@ -439,97 +533,6 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
         clusters['yloc'][i] = np.mean(UTM_Y[clusterlist[i]])
 
     return clusters
-
-###############################################################################################
-
-def get_close_flares(xloc_or_lat,
-                     yloc_or_lon,
-                     radius,
-                     threshold = 0.2,
-                     UTM_zone = 33,
-                     lonlat_coord = False,
-                     closeness_param = 'area'):
-    
-    '''
-    Finds all the flares that are within a certain distance of each other or shares a certain
-    amount of area. The function use UTM x an y or lan/lot coordinates and footprint radius 
-    to return a list of pairs with indices of flares that are defined as close to each other 
-    according to the closeness_param and threshold parameters. Can calculate closeness based 
-    on distance between footprint center or the fractional (%) shared area between the footprints.
-
-    Input:
-    xloc_or_lat: numpy array
-        The x locations of the flares that have at least one overlapping flare, or the latitudes
-        of the flares if lonlat_coord = True.
-    yloc_or_lon: numpy array
-        The y locations of the flares that have at least one overlapping flare, or the longitudes
-        of the flares if lonlat_coord = True.
-    radius: numpy array
-        The radius of the flares.
-    threshold: float
-        The threshold for the overlap between two flares to be clustered. If closeness_param = 'area'
-        the threshold is the fractional (between 0 and 1) overlap between the flares. If closeness_param = 'distance'
-        the threshold is the distance between the flares number of flare footprint radii (Veloso et al., 
-        2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
-        Default: 0.2
-    UTM_zone: int
-        The UTM zone where the flares are located
-        Default: 33
-    lonlat_coord: boolean
-        If True the function uses the lon/lat coordinates of the flares instead of the UTM x and y
-        coordinates. Recalculates the input lon/lat coorinates to UTM x and y coordinates.
-
-    Output:
-    indices: numpy array
-        A list of pairs with indices of flares that are defined as close to each other according to
-        the closeness_param and threshold parameters.
-    '''
-    #check if the input coordinates are lon/lat or UTM x/y and convert to utm if 
-    #lonlat_coord == True
-    if lonlat_coord == True:
-        [xloc_or_lat,yloc_or_lon] = utm.from_latlon(xloc_or_lat,yloc_or_lon,UTM_zone,'U')
-    
-    #Calculate and create a matrix with the distance between all the flares
-    flare_dists = get_distance(xloc_or_lat,yloc_or_lon)
-
-    #Get the close flares if closeness_param == 'distance'
-    if closeness_param == 'distance':
-        #Find the indices of the flares that are within the threshold distance of each other
-        #which is given by the threshold*radius
-        indices = np.transpose(np.where(flare_dists < threshold*radius))
-        #Remove all diagonal matches (where indices[i,:] is the same number)
-        indices = indices[indices[:,0] != indices[:,1],:]
-
-    #Get the close flares if closeness_param == 'area'
-    if closeness_param == 'area':
-        #Calculate the area of the footprint of each flare
-        flare_areas = np.pi*radius**2
-        #Create a matrix with the shared area between all the flares in the dataset
-        flare_shared_areas = np.zeros((len(xloc_or_lat),len(xloc_or_lat)))
-        for i in range(len(xloc_or_lat)):
-            for j in range(len(xloc_or_lat)):
-                flare_shared_areas[i,j] = get_shared_area(xloc_or_lat[i],
-                xloc_or_lat[j],yloc_or_lon[i],yloc_or_lon[j],radius[i],
-                radius[j])
-        #Divide the flare_shared_areas with the flare_areas to get the fraction of 
-        #the area that is shared between the flares
-        frac_flare_shared_areas = flare_shared_areas*(1./flare_areas)
-        #Find the indices of the flares that overlap with at least the overlap threshold 
-        #of their area
-        indices = np.transpose(np.where(frac_flare_shared_areas > threshold))
-
-    #Find repeated and/or mirrored pairs in the indices array
-    #Find the indices of the repeated pairs
-    i = 0
-    while i <= len(indices):
-        if i == len(indices):
-            break
-        repeated_index=(np.where((indices[:,0] == indices[i,1]) & (indices[:,1] == indices[i,0])))
-        i = i+1
-        #Remove the repeated pairs
-        indices = np.delete(indices,repeated_index,0)
-    
-    return indices
 
 ###############################################################################################
 
@@ -621,8 +624,6 @@ def save_clustered_data(filepath,clusters,DFdata,varstrings):
 ###############################################################################################
 #---------------------------------------------------------------------------------------------#
 ###############################################################################################
-
-
 
 ################################################
 ################# INITIATION ###################
