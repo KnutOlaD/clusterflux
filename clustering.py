@@ -671,6 +671,16 @@ if __name__ == '__main__':
                         varstrings)
 
     
+    #Make a plot of all the clustered and non-clustered flare areas
+    plt.figure()
+    plt.scatter(DFdata[varstrings['UTM_X']].values,DFdata[varstrings['UTM_Y']].values,
+                s = 2*np.pi*DFdata[varstrings['Radius']].values,
+                c = DFdata[varstrings['Flowrate']].values)
+    plt.scatter(clusters['xloc'],clusters['yloc'],s = clusters['area'],
+                c = clusters['flow'],marker = 'x')
+    plt.colorbar()
+    plt.show()
+
 
 
 
