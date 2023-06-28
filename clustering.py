@@ -49,8 +49,9 @@ This is where you set input parameters and runs the whole thing! :-)
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import utm
 import warnings
+import tkinter as tk
+import conversion as utm
 
 
 ################################################
@@ -347,6 +348,9 @@ def get_close_flares(xloc_or_lat,
         A list of pairs with indices of flares that are defined as close to each other according to
         the closeness_param and threshold parameters.
     '''
+    #Define indices parameter
+    indices = np.array([])
+    
     #check if the input coordinates are lon/lat or UTM x/y and convert to utm if 
     #lonlat_coord == True
     if lonlat_coord == True:
@@ -396,7 +400,7 @@ def get_close_flares(xloc_or_lat,
 
 ###############################################################################################
 
-def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
+def cluster_flares_mario(DFdata,UTM_X,UTM_Y,varstrings,indices):
     '''
     Clusters flares that have overlapping areas/are within a certain distance of each other
     (this is done through a different function) and calculates the total area and flowrate
@@ -419,6 +423,8 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
         The y locations of the flares that have at least one overlapping flare
     indices: numpy array
         The indices of the flares that have at least one overlapping flare
+    varstrings: dictionary
+        Dictionary containing the column identifiers in the excel file.
     
     Output:
     clusters: dictionary
@@ -440,7 +446,7 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
         warnings.warn('No clusters in indices list')
         return None
 
-    #list of clusters
+    #list of clusters, each cluster is a list of indices
     clusterlist = []
     #clusterdictionary which shall contain the cluster info we calculate
     clusters = {}
@@ -521,11 +527,22 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
         #sum up all the ones in the grid to get the total area covered by the flares
         clusters['area'][i] = np.sum(grid)*grid_spacing**2
     
-    #Calculate the average flowrate of the cluster
+    #Calculate the flowrate per area for each flare
+    flow_per_area = DFdata[varstrings['Flowrate']].values/(np.pi*DFdata[varstrings['Radius']].values**2)
+
+    #Sum up the flowrate per area for each cluster
+    for i in range(len(clusterlist)):
+        avg_flow_per_area = sum(flow_per_area[clusterlist[i]])/len(clusterlist[i])
+
+    #Calculate the average flowrate of the cluster (avg_flow_per_area*area)
+    clusters['flow'] = clusters['area']*avg_flow_per_area
+
+    #DEPRECATED: Calculate the average flowrate of the cluster (sum of flowrates of all flares in cluster)
     for i in range(len(clusterlist)):
         for j in range(len(clusterlist[i])):
             clusters['flow'][i] = np.mean(clusters['flow'][i] + 
                                           DFdata[varstrings['Flowrate']].values[clusterlist[i][j]])
+    #************************************************************************************************
 
     #Calculate the geometric center of each cluster
     for i in range(len(clusterlist)):
@@ -536,7 +553,7 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,indices):
 
 ###############################################################################################
 
-def save_clustered_data(filepath,clusters,DFdata,varstrings):
+def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     '''
     Creates a dataframe with clustered flares and their locations and flowrates together with 
     the flares that were not clustered as individual clusters. Saves the dataframe to an excel file
@@ -557,6 +574,8 @@ def save_clustered_data(filepath,clusters,DFdata,varstrings):
             The y location of the center of each cluster.
         clusterlist: list
             A list of lists containing the indices of the flares in each cluster.
+    indices: numpy array
+        The indices of the flares that have at least one overlapping flare
     DFdata: pandas dataframe
         The dataframe containing the unclustered flare data.
     varstrings: dictionary
@@ -583,6 +602,9 @@ def save_clustered_data(filepath,clusters,DFdata,varstrings):
     #calculate the lon and lat of the clusters using the UTM coordinates and the utm package
     lonlat = utm.to_latlon(clusters['xloc'],clusters['yloc'],UTM_Zone,'U')
         
+    #Define opening angle of the echosounder to be able to calculate the depth column
+    opening_angle_ES = 6.81 #degrees
+
     for i in range(len(clusters['area'])):
         DFclustered = DFclustered.append({'cluster_id': 'cluster_' + '_'.join(map(str,clusters['clusterlist'][i])),
                                       varstrings['UTM_X']: clusters['xloc'][i],
@@ -591,28 +613,34 @@ def save_clustered_data(filepath,clusters,DFdata,varstrings):
                                       varstrings['lon']: lonlat[0][i],
                                       'UTM_zone': DFdata[varstrings['UTM_zone']][i],
                                       'Area': clusters['area'][i],
-                                      'Average_Flowrate': clusters['flow'][i]}, 
+                                      'Average_depth': np.sqrt(clusters['area'][i]/np.pi)/np.tan(np.deg2rad(opening_angle_ES/2)),
+                                      'Average_Flowrate': clusters['flow'][i],
+                                      'Flares in cluster': len(clusters['clusterlist'][i])}, 
                                       ignore_index=True)
         
     
     #Add all the flares that did not overlap with at least 20% of their area as individual
     #clusters to the dataframe
 
-    all_indices = np.arange(len(UTM_X))
+    all_indices = np.arange(len(DFdata[varstrings['Radius']]))
     #Find all indices that is not part of the indices array
     indices_lonely = np.setdiff1d(all_indices,indices[:,0])   
     indices_lonely = np.setdiff1d(indices_lonely,indices[:,1])   
 
+
+
     #Add these to the dataframe with their own cluster_ids
     for i in range(len(indices_lonely)):
         DFclustered = DFclustered.append({'cluster_id': 'cluster_' + str(indices_lonely[i]),
-                                        varstrings['UTM_X']: UTM_X[indices_lonely[i]],
-                                           varstrings['UTM_Y']: UTM_Y[indices_lonely[i]],
+                                        varstrings['UTM_X']: DFdata[varstrings['UTM_X']].values[indices_lonely[i]],
+                                           varstrings['UTM_Y']: DFdata[varstrings['UTM_Y']].values[indices_lonely[i]],
                                            varstrings['lat']: DFdata[varstrings['lat']].values[indices_lonely[i]],
                                             varstrings['lon']: DFdata[varstrings['lon']].values[indices_lonely[i]],
                                            'UTM_zone': DFdata[varstrings['UTM_zone']][indices_lonely[i]],
-                                             'Area': np.round(np.pi*DFdata[varstrings['Radius']].values[indices_lonely[i]]**2,0), #[m^2
-                                           'Average_Flowrate': DFdata[varstrings['Flowrate']].values[indices_lonely[i]]}, 
+                                             'Area': np.round(np.pi*DFdata[varstrings['Radius']].values[indices_lonely[i]]**2,0), 
+                                             'Average_depth': DFdata[varstrings['Radius']].values[indices_lonely[i]]/np.tan(np.deg2rad(opening_angle_ES/2)),
+                                           'Average_Flowrate': DFdata[varstrings['Flowrate']].values[indices_lonely[i]], 
+                                           'Flares in cluster': 1},
                                            ignore_index=True)
 
     DFclustered.set_index('cluster_id', inplace=True)
@@ -621,6 +649,103 @@ def save_clustered_data(filepath,clusters,DFdata,varstrings):
 
     return DFclustered
     
+
+###############################################################################################
+
+def master_func(filepath,closeness_param,threshold,plot = True):
+    '''
+    Function that do the clustering using the functions described above. Returns a dataframe with
+    the clustered flare data and saves the dataframe to a new excel file. Also makes a plot of all the
+    flares and the clusters if plot parameter plot = True.
+
+    Input:
+    filepath: string
+        Path and filename of the excel file to be stored.
+    closeness_param: string
+        The preferred method for clustering the flares. Options are 'distance' and 'area'.
+    threshold: float
+        The threshold for the overlap between two flares to be clustered. If closeness_param = 'area'
+        the threshold is the fractional (between 0 and 1) overlap between the flares. If closeness_param = 'distance'
+        the threshold is the distance between the flares number of flare footprint radii (Veloso et al., 
+        2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
+    plot: boolean
+        If True the function makes a plot of all the flares and the clusters.
+        Default: True
+    
+    Output:
+    DFclustered: pandas dataframe
+        Dataframe containing the clustered flare data.
+
+    Creates an .xslx file with the clustered flare data named "filename + clustered.xlsx" and 
+    stores it in the same folder as filename. Creates a plot if plot=True.
+    '''
+    ### Load the data ###
+    DFdata,varstrings = load_flare_data(filepath)
+
+    ### clustering ###
+    #Find flares that are close enough/have enough overlapping area to be clustered
+    indices = get_close_flares(DFdata[varstrings['UTM_X']].values, 
+                     DFdata[varstrings['UTM_Y']].values, 
+                     DFdata[varstrings['Radius']].values, 
+                     threshold = threshold,
+                     UTM_zone = 33,
+                     lonlat_coord = False,
+                     closeness_param = closeness_param)
+
+    #Calculate the area, center location and flowrate of the clusters
+    clusters = cluster_flares_mario(DFdata,
+                                    DFdata[varstrings['UTM_X']].values,
+                                    DFdata[varstrings['UTM_Y']].values,
+                                    varstrings,
+                                    indices)
+    
+    ### Saving and plotting ### 
+    DFclustered = save_clustered_data(filepath.rstrip('.xlsx')+'clustered.xlsx',
+                        clusters,
+                        indices,
+                        DFdata,
+                        varstrings)
+
+    if plot == True:
+        #Make a plot of all the clustered and non-clustered flare areas
+        plt.figure()
+        plt.scatter(DFdata[varstrings['UTM_X']].values,DFdata[varstrings['UTM_Y']].values,
+                    s = 2*np.pi*DFdata[varstrings['Radius']].values,
+                    c = DFdata[varstrings['Flowrate']].values)
+        plt.scatter(clusters['xloc'],clusters['yloc'],s = clusters['area'],
+                    c = clusters['flow'],marker = 'x')
+        plt.xlabel('UTM X [m]')
+        plt.ylabel('UTM Y [m]') 
+        #plt.title('Acoustic footprints and clustered flares')
+        #Write a textbox explaining that the size of the circles are the footprint areas
+        #color is the flowrate and the x's are where the clusters are located
+        textstr = '\n'.join((
+            r'Circle size: Flare footprint area',
+            r'Color: Flare flowrate',
+            r'X: Cluster center'))
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.2)
+        plt.text(0.05, 0.95, textstr, transform=plt.gca().transAxes, fontsize=10,
+                verticalalignment='top', bbox=props)
+        
+        plt.colorbar()
+        plt.show()
+    
+    return DFclustered
+
+###############################################################################################
+
+def run_clustering():
+    filepath = entry_filepath.get()
+    closeness_param = entry_closeness_param.get()
+    threshold = float(entry_threshold.get())
+    
+    # Call your master_func with the retrieved input values
+    master_func(filepath, closeness_param, threshold)
+
+'''
+GUI function
+'''
+
 ###############################################################################################
 #---------------------------------------------------------------------------------------------#
 ###############################################################################################
@@ -630,9 +755,82 @@ def save_clustered_data(filepath,clusters,DFdata,varstrings):
 ################################################
 
 if __name__ == '__main__':
+
+    #######################################################
+    ################# NON GUI VERSION #####################
+    #######################################################
+
+    '''
+    ### Set input parameters ###
+    #Path to the excel file containing the flare data
+    filepath = 'filepath.xlsx'
+
+    #Preferred method for clustering the flares. Options are 'distance' and 'area'
+    closeness_param = 'distance' #can be 'area' or 'distance'
+
+    #Threshold for clustering the flares. If closeness_param = 'distance' the threshold is the distance between the flares
+    #in number of flare footprint radii (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
+    #If closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap between the flares.
+    threshold = 1.8 #can be fraction of overlapping area, or number of flare footprint radii
+
+    #Run master function
+    master_func(filepath,closeness_param,threshold,plot=True)
+    '''
+    
+    ##################################################
+    ################# GUI VERSION ####################
+    ##################################################
+
+#Create a GUI to select the input parameters and run the clustering algorithm on the data 
+#and save the clustered data to a new excel file
+# Function to execute when the "Run" button is clicked
+
+    # Create a GUI
+    root = tk.Tk()
+    root.title('Flare clustering')
+    root.geometry('500x500')
+
+    # Create a frame for the input parameters
+    frame_input = tk.Frame(root)
+    frame_input.pack(side='top', fill='both', expand=True)
+
+    # Create a frame for the buttons
+    frame_buttons = tk.Frame(root)
+    frame_buttons.pack(side='bottom', fill='both', expand=True)
+
+    # Add a field for the filepath
+    label_filepath = tk.Label(frame_input, text='Filepath:')
+    label_filepath.grid(row=0, column=0)
+    entry_filepath = tk.Entry(frame_input)
+    entry_filepath.grid(row=0, column=1)
+
+    # Add a field for the closeness parameter
+    label_closeness_param = tk.Label(frame_input, text='Closeness parameter:')
+    label_closeness_param.grid(row=1, column=0)
+    entry_closeness_param = tk.Entry(frame_input)
+    entry_closeness_param.grid(row=1, column=1)
+
+    # Add a field for the thresholds
+    label_threshold = tk.Label(frame_input, text='Threshold:')
+    label_threshold.grid(row=2, column=0)
+    entry_threshold = tk.Entry(frame_input)
+    entry_threshold.grid(row=2, column=1)
+
+    # Add a button to run the clustering algorithm
+    button_run = tk.Button(frame_buttons, text='Run', command=run_clustering)
+    button_run.pack(side='left', fill='both', expand=True)
+
+    # Start the GUI main event loop
+    root.mainloop()
+
+
+'''
+    #######################################################
+    ################# DEPRECATED CODE #####################
+    #######################################################
+
     
     ### Set input parameters ###
-
     #Path to the excel file containing the flare data
     filepath = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
 
@@ -671,6 +869,9 @@ if __name__ == '__main__':
                         varstrings)
 
     
+    
+
+
     #Make a plot of all the clustered and non-clustered flare areas
     plt.figure()
     plt.scatter(DFdata[varstrings['UTM_X']].values,DFdata[varstrings['UTM_Y']].values,
@@ -680,21 +881,22 @@ if __name__ == '__main__':
                 c = clusters['flow'],marker = 'x')
     plt.colorbar()
     plt.show()
+    
 
 
 
+    #Create a GUI 
 
 
 
-
-
+'''
 
 
     
     
 
   
-    '''
+'''
     DEPRECATED CODE:
     #Find out if the flares overlapping with the flares in the non_unique_index 
     #list are also overlapping with each other
