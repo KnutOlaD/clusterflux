@@ -816,6 +816,8 @@ if __name__ == '__main__':
     entry_threshold = tk.Entry(frame_input)
     entry_threshold.grid(row=2, column=1)
 
+    
+
     # Add a button to run the clustering algorithm
     button_run = tk.Button(frame_buttons, text='Run', command=run_clustering)
     button_run.pack(side='left', fill='both', expand=True)
@@ -823,182 +825,35 @@ if __name__ == '__main__':
     # Start the GUI main event loop
     root.mainloop()
 
-
-'''
-    #######################################################
-    ################# DEPRECATED CODE #####################
-    #######################################################
-
-    
-    ### Set input parameters ###
-    #Path to the excel file containing the flare data
-    filepath = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
-
-    #Preferred method for clustering the flares. Options are 'distance' and 'area'
-    closeness_param = 'area'
-
-    #Threshold for clustering the flares. If closeness_param = 'distance' the threshold is the distance between the flares
-    #in number of flare footprint radii (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
-    #If closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap between the flares.
-    threshold = 0.2
-
-    ### Load the data ###
-    
-    DFdata,varstrings = load_flare_data(filepath)
-
-    ### clustering ###
-
-    #Find flares that are close enough/have enough overlapping area to be clustered
-    indices = get_close_flares(DFdata[varstrings['UTM_X']].values, 
-                     DFdata[varstrings['UTM_Y']].values, 
-                     DFdata[varstrings['Radius']].values, 
-                     threshold = threshold,
-                     UTM_zone = 33,
-                     lonlat_coord = False,
-                     closeness_param = closeness_param)
-
-    #Calculate the area, center location and flowrate of the clusters
-    clusters = cluster_flares_mario(DFdata,DFdata[varstrings['UTM_X']].values,DFdata[varstrings['UTM_Y']].values,indices)
-
-    ### Saving and plotting ### 
-
-    # Make a new excel file with the clustered flares and their locations and flowrates
-    save_clustered_data(filepath.rstrip('.xlsx')+'clustered.xlsx'
-                        ,clusters,
-                        DFdata,
-                        varstrings)
-
-    
-    
-
-
-    #Make a plot of all the clustered and non-clustered flare areas
+    #Add a square in the gui where a plot of the clusterd as well as non-clustered flares 
+    #is shown
+    '''
+    #Make a square for the plot in the gui
     plt.figure()
     plt.scatter(DFdata[varstrings['UTM_X']].values,DFdata[varstrings['UTM_Y']].values,
                 s = 2*np.pi*DFdata[varstrings['Radius']].values,
                 c = DFdata[varstrings['Flowrate']].values)
     plt.scatter(clusters['xloc'],clusters['yloc'],s = clusters['area'],
                 c = clusters['flow'],marker = 'x')
-    plt.colorbar()
-    plt.show()
+    plt.xlabel('UTM X [m]')
+    plt.ylabel('UTM Y [m]')
+    plt.title('Acoustic footprints and clustered flares')
+    #Write a textbox explaining that the size of the circles are the footprint areas
+    #color is the flowrate and the x's are where the clusters are located
+    textstr = '\n'.join((
+        r'Circle size: Flare footprint area',
+        r'Color: Flare flowrate',
+        r'X: Cluster center'))
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.2)
+    plt.text(0.05, 0.95, textstr, transform=plt.gca().transAxes, fontsize=10,
+            verticalalignment='top', bbox=props)
+    #Make the plot appear in the gui
     
+    canvas = FigureCanvasTkAgg(plt.gcf(), master=root)
+    canvas.draw()
+    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+    #Add a toolbar to the plot
+    toolbar = NavigationToolbar2Tk(canvas, root)
+    toolbar.update()
+    '''
 
-
-
-    #Create a GUI 
-
-
-
-'''
-
-
-    
-    
-
-  
-'''
-    DEPRECATED CODE:
-    #Find out if the flares overlapping with the flares in the non_unique_index 
-    #list are also overlapping with each other
-
-    #Find the indices of the flares that overlap with the flares in the
-    #non_unique_index list
-
-    np.where(non_unique_index)
-
-    indices_overlap = np.where(np.isin(indices[:,0],indices[non_unique_index,0]))
-
-    ### clustering ###
-    #These flares should be clustered together with a total area equal to the 
-    #sum of the areas of the two flares minus the shared area between them and
-    #a total flowrate equal to the sum of the flowrates of the two flares.
-    #The center location of the cluster should be the geometric center of the
-    #two flares weighted by the flare areas.
-
-    #Create a new dataframe with clustered flares. The flares that did not 
-    #have sufficiently overlapping areas are copied to the new dataframe as
-    #individual clusters. 
-
-    #Create a new dataframe with the same columns as DFdata, but replace 
-    #the index column name with 'cluster_id'
-    DFclustered = pd.DataFrame(columns = DFdata.columns)
-    DFclustered.index.name = 'cluster_id'
-
-    #Calculate the location, area and flowrate of the clustered flares
-    #check if the indices are empty or of length 1
-
-    if len(indices) == 0:
-        print('No clusters found')
-    if len(indices) > 0:
-        for i in range(len(indices)):
-            #Calculate the center location of the cluster
-            x_loc = (UTM_X[indices[0][i]]*flare_areas[indices[0][i]]+
-                    UTM_X[indices[1][i]]*flare_areas[indices[1][i]]) \
-                /(flare_areas[indices[0][i]]+flare_areas[indices[1][i]])
-            y_loc = (UTM_Y[indices[0][i]]*flare_areas[indices[0][i]]+
-                    UTM_Y[indices[1][i]]*flare_areas[indices[1][i]]) \
-                /(flare_areas[indices[0][i]]+flare_areas[indices[1][i]])
-            #Calculate the area of the cluster
-            area = flare_areas[indices[0][i]]+flare_areas[indices[1][i]]- \
-            flare_shared_areas[indices[0][i],indices[1][i]]
-            #Calculate the flowrate of the cluster
-            flowrate = DFdata['Flow_Rate_realBRS'].values[indices[0][i]]+ \
-            DFdata['Flow_Rate_realBRS'].values[indices[1][i]]
-            #Add the cluster to the new dataframe
-            DFclustered = DFclustered.append({'cluster_id': 'cluster_' + str(i+1),
-                                            'Average_X_C_Foot': x_loc,
-                                            'Average_Y_C_Foot': y_loc,
-                                            'Average_Radius_Foot': np.sqrt(area/np.pi), 
-                                            'Average_Flowrate_Foot': flowrate}, 
-                                            ignore_index=True)
-    else: #Only one option left: len(indices) == 1  
-        #Calculate the center location of the cluster
-        i=0
-        x_loc = (UTM_X[indices[0]]*flare_areas[indices[0]]+
-                UTM_X[indices[1]]*flare_areas[indices[1]]) \
-            /(flare_areas[indices[0]]+flare_areas[indices[1]])
-        y_loc = (UTM_Y[indices[0]]*flare_areas[indices[0]]+
-                UTM_Y[indices[1]]*flare_areas[indices[1]]) \
-            /(flare_areas[indices[0]]+flare_areas[indices[1]])
-        #Calculate the area of the cluster
-        area = flare_areas[indices[0]]+flare_areas[indices[1]]- \
-        flare_shared_areas[indices[0],indices[1]]
-        #Calculate the flowrate of the cluster
-        flowrate = DFdata['Flow_Rate_realBRS'].values[indices[0]]+ \
-        DFdata['Flow_Rate_realBRS'].values[indices[1]]
-        #Add the cluster to the new dataframe
-        DFclustered = DFclustered.append({'cluster_id': 'cluster_' + str(i+1),
-                                        'Average_X_C_Foot': x_loc,
-                                        'Average_Y_C_Foot': y_loc,
-                                        'Average_Radius_Foot': np.sqrt(area/np.pi), 
-                                        'Average_Flowrate_Foot': flowrate}, 
-                                        ignore_index=True)
-
-
-    #Get the number of clusters added
-    n_clusters = len(indices)
-    
-    #Find the indices of the flares that did not overlap with at least 20% of
-    #their area
-    indices = np.where(frac_flare_shared_areas <= 0.2)
-    #Remove duplicates
-    indices = np.unique(indices)
-
-    #Add these to the dataframe with their own cluster_ids
-
-    for i in range(len(indices[0])):
-        i = i+n_clusters
-        DFclustered = DFclustered.append({'cluster_id': 'cluster_' + str(indices[i]),
-                                        'Average_X_C_Foot': UTM_X[indices[i]],
-                                           'Average_Y_C_Foot': UTM_Y[indices[i]],
-                                           'Average_Radius_Foot': DFdata['Average_Radius_Foot'].values[indices[i]], 
-                                           'Average_Flowrate_Foot': DFdata['Flow_Rate_realBRS'].values[indices[i]]}, 
-                                           ignore_index=True)
-
-    #Save the dataframe to a xlsx file
-
-DFclustered.to_excel('C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR_clustered.xlsx')
-
-
-
-'''
