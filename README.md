@@ -8,4 +8,4 @@
 #License: MIT
 #Source: https://pypi.org/project/utm/
 
-#Everything else is written by me.
+#Everything else (except the MIT-license text) is written by me.
