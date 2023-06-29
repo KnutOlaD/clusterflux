@@ -46,6 +46,7 @@ and will be implemented soon.
 
 
 FUNCTIONS:
+
 load_flare_data: Loads the FlareHunter/ESP3 excel 
 dataset. The excel file contains data from the
 FlareHunter/ESP3 experiment. The data is stored 
@@ -99,6 +100,7 @@ the flare observations that were not clustered.
 
 
 INITIATION: 
+
 There are two initation options which is set by the 
 beginning of the INITIATION section in the script by 
 choosing the "runGUI" parameter to runGUI == False or 
