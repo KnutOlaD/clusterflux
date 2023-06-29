@@ -593,8 +593,13 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     #calculate the lon and lat of the clusters using the UTM coordinates and the utm package
     lonlat = utm.to_latlon(clusters['xloc'],clusters['yloc'],UTM_Zone,'U')
         
+    #Calculate the average area of all the flare observations
+    avg_area = (np.pi*DFdata[varstrings['Radius']].values**2)
+
     #Define opening angle of the echosounder to be able to calculate the depth column
     opening_angle_ES = 6.81 #degrees
+
+
 
     ### Add all the clustered and non-clustered data to the DFclustered dataframe ###
 
@@ -606,14 +611,15 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     for i in range(len(clusters['area'])):
         #Create a dictionary with the cluster data for index i
         new_data = {
-        'cluster_id': 'cluster_' + str(i),
+        'cluster_id': 'cluster_' + str(i+1),
         varstrings['UTM_X']: clusters['xloc'][i],
         varstrings['UTM_Y']: clusters['yloc'][i],
         varstrings['lat']: lonlat[1][i],
         varstrings['lon']: lonlat[0][i],
         'UTM_zone': DFdata[varstrings['UTM_zone']][i],
         'Area [m^2]': clusters['area'][i],
-        'Average_depth': np.sqrt(clusters['area'][i] / np.pi) / np.tan(np.deg2rad(opening_angle_ES / 2)),
+        'Average_depth': np.mean(np.sqrt(avg_area[clusters['clusterlist'][i]])/
+                                 np.sqrt(np.pi*np.tan(np.deg2rad(opening_angle_ES/2))**2)),
         'Total_Flowrate': clusters['flow'][i],
         'Flares in cluster': len(clusters['clusterlist'][i])}
         #Append the dictionary to the data list
@@ -637,7 +643,7 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     # Add lonely indices data to the list
     for i in range(len(indices_lonely)):
         new_data = {
-            'cluster_id': 'cluster_' + str(i+len(clusters['area'])),
+            'cluster_id': 'cluster_' + str(i+1+len(clusters['area'])),
             varstrings['UTM_X']: DFdata[varstrings['UTM_X']].values[indices_lonely[i]],
             varstrings['UTM_Y']: DFdata[varstrings['UTM_Y']].values[indices_lonely[i]],
             varstrings['lat']: DFdata[varstrings['lat']].values[indices_lonely[i]],
