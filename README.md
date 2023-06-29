@@ -109,7 +109,7 @@ as a normal python script while the latter returns a simple
 gui for giving the input parameters. 
 
 Inputs: 
-filepath: string \n
+filepath: string 
 	Path and filename of the excel file to be stored. 
 closeness_parameter: string
 	The preferred method for determining wether two flares
