@@ -635,21 +635,6 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     indices_lonely = np.setdiff1d(indices_lonely,indices[:,1])   
 
     #Add these to the dataframe with their own cluster_ids
-
-    '''
-    for i in range(len(indices_lonely)):
-        DFclustered = DFclustered.append({'cluster_id': 'cluster_' + str(indices_lonely[i]),
-                                        varstrings['UTM_X']: DFdata[varstrings['UTM_X']].values[indices_lonely[i]],
-                                           varstrings['UTM_Y']: DFdata[varstrings['UTM_Y']].values[indices_lonely[i]],
-                                           varstrings['lat']: DFdata[varstrings['lat']].values[indices_lonely[i]],
-                                            varstrings['lon']: DFdata[varstrings['lon']].values[indices_lonely[i]],
-                                           'UTM_zone': DFdata[varstrings['UTM_zone']][indices_lonely[i]],
-                                             'Area': np.round(np.pi*DFdata[varstrings['Radius']].values[indices_lonely[i]]**2,0), 
-                                             'Average_depth': DFdata[varstrings['Radius']].values[indices_lonely[i]]/np.tan(np.deg2rad(opening_angle_ES/2)),
-                                           'Average_Flowrate': DFdata[varstrings['Flowrate']].values[indices_lonely[i]], 
-                                           'Flares in cluster': 1},
-                                           ignore_index=True)
-    '''
         
     for i in range(len(clusters['area'])):
         new_row = {
