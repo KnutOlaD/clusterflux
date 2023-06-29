@@ -5,8 +5,6 @@
 #License: MIT
 #Source: https://pypi.org/project/utm/
 
-from utm.error import OutOfRangeError
-
 # For most use cases in this module, numpy is indistinguishable
 # from math, except it also works on numpy arrays
 try:
