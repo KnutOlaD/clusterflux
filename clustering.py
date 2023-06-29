@@ -1,9 +1,5 @@
 '''
 Functions and initation for clustering techniques of flare data.
-Requires the utm package. Install with pip install utm or 
-conda install -c conda-forge utm
-conda install -c "conda-forge/label/cf201901" utm
-conda install -c "conda-forge/label/cf202003" utm
 
 Author: Knut Ola Dølven, knut.o.dolven@uit.no (c) 2023
 
