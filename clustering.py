@@ -610,53 +610,109 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     for i in range(len(clusters['area'])):
         #Create a dictionary with the cluster data for index i
         new_data = {
-        'cluster_id': 'cluster_' + '_'.join(map(str, clusters['clusterlist'][i])),
+        'cluster_id': 'cluster_' + str(i),
         varstrings['UTM_X']: clusters['xloc'][i],
         varstrings['UTM_Y']: clusters['yloc'][i],
         varstrings['lat']: lonlat[1][i],
         varstrings['lon']: lonlat[0][i],
         'UTM_zone': DFdata[varstrings['UTM_zone']][i],
-        'Area': clusters['area'][i],
+        'Area [m^2]': clusters['area'][i],
         'Average_depth': np.sqrt(clusters['area'][i] / np.pi) / np.tan(np.deg2rad(opening_angle_ES / 2)),
-        'Average_Flowrate': clusters['flow'][i],
+        'Total_Flowrate': clusters['flow'][i],
         'Flares in cluster': len(clusters['clusterlist'][i])}
         #Append the dictionary to the data list
         data.append(new_data)
 
     # Create a DataFrame from all the dictionaries in the data list and concatanate them
     # into one DFclustered dataframe
-    DFclustered = pd.concat([pd.DataFrame(d, index=[0]) for d in data], ignore_index=True)
+    # Create a DataFrame from all the dictionaries in the data list
+    DFclustered = pd.DataFrame(data)
 
     #Add all the non-clustered data: 
 
     all_indices = np.arange(len(DFdata[varstrings['Radius']]))
-    #Find all indices that is not part of the indices array
-    indices_lonely = np.setdiff1d(all_indices,indices[:,0])   
-    indices_lonely = np.setdiff1d(indices_lonely,indices[:,1])   
+    # Find indices that are not part of the indices array
+    indices_lonely = np.setdiff1d(all_indices, indices[:, 0])
+    indices_lonely = np.setdiff1d(indices_lonely, indices[:, 1])
 
-    #Add these to the dataframe with their own cluster_ids
-        
-    for i in range(len(clusters['area'])):
-        new_row = {
-        'cluster_id': 'cluster_' + '_'.join(map(str, clusters['clusterlist'][i])),
-        varstrings['UTM_X']: clusters['xloc'][i],
-        varstrings['UTM_Y']: clusters['yloc'][i],
-        varstrings['lat']: lonlat[1][i],
-        varstrings['lon']: lonlat[0][i],
-        'UTM_zone': DFdata[varstrings['UTM_zone']][i],
-        'Area': clusters['area'][i],
-        'Average_depth': np.sqrt(clusters['area'][i] / np.pi) / np.tan(np.deg2rad(opening_angle_ES / 2)),
-        'Average_Flowrate': clusters['flow'][i],
-        'Flares in cluster': len(clusters['clusterlist'][i])}
-        DFclustered = pd.concat([DFclustered, pd.DataFrame(new_row, index=[0])], ignore_index=True)
+    # Create a list to hold all the lonely indices data
+    lonely_data = []
 
+    # Add lonely indices data to the list
+    for i in range(len(indices_lonely)):
+        new_data = {
+            'cluster_id': 'cluster_' + str(i+len(clusters['area'])),
+            varstrings['UTM_X']: DFdata[varstrings['UTM_X']].values[indices_lonely[i]],
+            varstrings['UTM_Y']: DFdata[varstrings['UTM_Y']].values[indices_lonely[i]],
+            varstrings['lat']: DFdata[varstrings['lat']].values[indices_lonely[i]],
+            varstrings['lon']: DFdata[varstrings['lon']].values[indices_lonely[i]],
+            'UTM_zone': DFdata[varstrings['UTM_zone']][indices_lonely[i]],
+            'Area [m^2]': np.round(np.pi * DFdata[varstrings['Radius']].values[indices_lonely[i]]**2, 0),
+            'Average_depth': DFdata[varstrings['Radius']].values[indices_lonely[i]] / np.tan(np.deg2rad(opening_angle_ES / 2)),
+            'Total_Flowrate': DFdata[varstrings['Flowrate']].values[indices_lonely[i]],
+            'Flares in cluster': 1
+        }
+        DFclustered = pd.concat([DFclustered, pd.DataFrame(new_data, index=[0])], ignore_index=True)
 
+    # Create a DataFrame from the lonely indices data list
+    #DFclustered = pd.concat([pd.DataFrame(d, index=[len(clusters['area'])]) for d in lonely_data], ignore_index=True)
     DFclustered.set_index('cluster_id', inplace=True)
     #Save the dataframe to a xlsx file
     DFclustered.to_excel(filepath)
 
     return DFclustered
+
+###############################################################################################
+
+def write_cluster_textfile(filepath,clusterlist,indices,DFdata):
+    '''
+    Writes a textfile showing which flares are in which cluster and the cluster name as well 
+    as the names of the flares that have not been clustered
+
+    Input:
+    filepath: string
+        Path to the location where the textfile is to be stored.
+    clusterslist: list
+        A list of lists containing the indices of the flares in each cluster.
+    indices: numpy array
+        The indices of the flares that have at least one overlapping flare
+    DFdata: pandas dataframe
+        The dataframe containing the unclustered flare data.
     
+    Output:
+    None (writes a textfile to the filepath location)
+
+    '''
+    with open(filepath.rstrip('.xlsx')+'clusterlist.txt','w') as f:
+        #Star with a list of hashtags
+        f.write('########################################\n')
+        #make a headline saying that this is the clustered flare list
+        f.write('##### Clustered flare observations #####\n')
+        f.write('########################################\n')
+        f.write('\n')
+        for i in range(len(clusterlist)):
+            f.write('cluster_' + str(i))
+            #List all the flare names in the clusterb ("Field_Name" in the input file)
+            for j in range(len(clusterlist[i])):
+                if j == 0:
+                    f.write('\t' + DFdata.index[clusterlist[i][j]] + '\n')
+                else:
+                    f.write('\t\t' + DFdata.index[clusterlist[i][j]] + '\n')
+            f.write('\n')
+            f.write('\n')
+        #make a list of hastags to separate the clustered flares from the non-clustered flares
+        f.write('##########################################\n')
+        f.write('#### Non-clustered flare observations ####\n')
+        f.write('##########################################\n')
+        f.write('\n')
+        #List all the flare names that were not clustered
+        counter = 0
+        for i in range(len(DFdata.index)):
+            if i not in indices[:,0] and i not in indices[:,1]:
+                counter = counter + 1
+                f.write('cluster_' + str(counter+len(clusterlist)))
+                f.write('\t' + DFdata.index[i] + '\n')
+        #Save the file to the same folder as the input file
 
 ###############################################################################################
 
@@ -696,7 +752,7 @@ def master_func(filepath,closeness_param,threshold,plot = True):
                      DFdata[varstrings['UTM_Y']].values, 
                      DFdata[varstrings['Radius']].values, 
                      threshold = threshold,
-                     UTM_zone = 33,
+                     UTM_zone = float(DFdata[varstrings['UTM_zone']][0][0:1]), #Getting utm-zone from data
                      lonlat_coord = False,
                      closeness_param = closeness_param)
 
@@ -708,11 +764,19 @@ def master_func(filepath,closeness_param,threshold,plot = True):
                                     indices)
     
     ### Saving and plotting ### 
+    #Save the clustered data and non-clustered data to a new excel file
     DFclustered = save_clustered_data(filepath.rstrip('.xlsx')+'clustered.xlsx',
                         clusters,
                         indices,
                         DFdata,
                         varstrings)
+    
+    #Make and save a textfile containing a list of all the flares that have been clustered
+    #and the cluster they belong to.
+    write_cluster_textfile(filepath,clusters['clusterlist'],indices,DFdata)
+
+    #Create a textfile with the names of the flares in each cluster and the cluster name
+    #and all the flares that were not clustered    
 
     if plot == True:
         #Make a plot of all the clustered and non-clustered flare areas
@@ -766,7 +830,7 @@ if __name__ == '__main__':
 
     #Run GUI version or non gui version trigger
 
-    runGUI = True #Set to True to run the GUI version, False to run the non GUI version
+    runGUI = False #Set to True to run the GUI version, False to run the non GUI version
 
     if runGUI == False:
 
