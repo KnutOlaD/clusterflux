@@ -600,6 +600,8 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     #Define opening angle of the echosounder to be able to calculate the depth column
     opening_angle_ES = 6.81 #degrees
 
+    '''
+    #Add all the clusters to the dataframe
     for i in range(len(clusters['area'])):
         DFclustered = DFclustered.append({'cluster_id': 'cluster_' + '_'.join(map(str,clusters['clusterlist'][i])),
                                       varstrings['UTM_X']: clusters['xloc'][i],
@@ -612,8 +614,33 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
                                       'Average_Flowrate': clusters['flow'][i],
                                       'Flares in cluster': len(clusters['clusterlist'][i])}, 
                                       ignore_index=True)
-        
     
+    '''
+    # Create a list to hold all the cluster data
+    data = []
+
+    for i in range(len(clusters['area'])):
+        #Create a dictionary with the cluster data for index i
+        new_data = {
+        'cluster_id': 'cluster_' + '_'.join(map(str, clusters['clusterlist'][i])),
+        varstrings['UTM_X']: clusters['xloc'][i],
+        varstrings['UTM_Y']: clusters['yloc'][i],
+        varstrings['lat']: lonlat[1][i],
+        varstrings['lon']: lonlat[0][i],
+        'UTM_zone': DFdata[varstrings['UTM_zone']][i],
+        'Area': clusters['area'][i],
+        'Average_depth': np.sqrt(clusters['area'][i] / np.pi) / np.tan(np.deg2rad(opening_angle_ES / 2)),
+        'Average_Flowrate': clusters['flow'][i],
+        'Flares in cluster': len(clusters['clusterlist'][i])}
+        #Append the dictionary to the data list
+        data.append(new_data)
+
+    # Create a DataFrame from all the dictionaries in the data list and concatanate them
+    # into one DFclustered dataframe
+    DFclustered = pd.concat([pd.DataFrame(d, index=[0]) for d in data], ignore_index=True)
+
+
+
     #Add all the flares that did not overlap with at least 20% of their area as individual
     #clusters to the dataframe
 
@@ -622,9 +649,9 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     indices_lonely = np.setdiff1d(all_indices,indices[:,0])   
     indices_lonely = np.setdiff1d(indices_lonely,indices[:,1])   
 
-
-
     #Add these to the dataframe with their own cluster_ids
+
+    '''
     for i in range(len(indices_lonely)):
         DFclustered = DFclustered.append({'cluster_id': 'cluster_' + str(indices_lonely[i]),
                                         varstrings['UTM_X']: DFdata[varstrings['UTM_X']].values[indices_lonely[i]],
@@ -637,6 +664,22 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
                                            'Average_Flowrate': DFdata[varstrings['Flowrate']].values[indices_lonely[i]], 
                                            'Flares in cluster': 1},
                                            ignore_index=True)
+    '''
+        
+    for i in range(len(clusters['area'])):
+        new_row = {
+        'cluster_id': 'cluster_' + '_'.join(map(str, clusters['clusterlist'][i])),
+        varstrings['UTM_X']: clusters['xloc'][i],
+        varstrings['UTM_Y']: clusters['yloc'][i],
+        varstrings['lat']: lonlat[1][i],
+        varstrings['lon']: lonlat[0][i],
+        'UTM_zone': DFdata[varstrings['UTM_zone']][i],
+        'Area': clusters['area'][i],
+        'Average_depth': np.sqrt(clusters['area'][i] / np.pi) / np.tan(np.deg2rad(opening_angle_ES / 2)),
+        'Average_Flowrate': clusters['flow'][i],
+        'Flares in cluster': len(clusters['clusterlist'][i])}
+        DFclustered = pd.concat([DFclustered, pd.DataFrame(new_row, index=[0])], ignore_index=True)
+
 
     DFclustered.set_index('cluster_id', inplace=True)
     #Save the dataframe to a xlsx file
@@ -751,25 +794,110 @@ GUI function
 
 if __name__ == '__main__':
 
-    #######################################################
-    ################# NON GUI VERSION #####################
-    #######################################################
+    #Run GUI version or non gui version trigger
 
-    
-    ### Set input parameters ###
-    #Path to the excel file containing the flare data
-    filepath = 'filepath.xlsx'
+    runGUI = True #Set to True to run the GUI version, False to run the non GUI version
 
-    #Preferred method for clustering the flares. Options are 'distance' and 'area'
-    closeness_param = 'distance' #can be 'area' or 'distance'
+    if runGUI == False:
 
-    #Threshold for clustering the flares. If closeness_param = 'distance' the threshold is the distance between the flares
-    #in number of flare footprint radii (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
-    #If closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap between the flares.
-    threshold = 1.8 #can be fraction of overlapping area, or number of flare footprint radii
+        #######################################################
+        ################# NON GUI VERSION #####################
+        #######################################################
+        
+        ### Set input parameters ###
+        #Path to the excel file containing the flare data
+        filepath = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
 
-    #Run master function
-    master_func(filepath,closeness_param,threshold,plot=True)
+        #Preferred method for clustering the flares. Options are 'distance' and 'area'
+        closeness_param = 'distance' #can be 'area' or 'distance'
+
+        #Threshold for clustering the flares. If closeness_param = 'distance' the threshold is the distance between the flares
+        #in number of flare footprint radii (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
+        #If closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap between the flares.
+        threshold = 1.8 #can be fraction of overlapping area, or number of flare footprint radii
+
+        #Run master function
+        master_func(filepath,closeness_param,threshold,plot=True)
+
+    ##################################################
+    ################# GUI VERSION ####################
+    ##################################################
+
+    if runGUI == True:
+
+        #Create a GUI to select the input parameters and run the clustering algorithm on the data 
+        #and save the clustered data to a new excel file
+        #Function to execute when the "Run" button is clicked
+
+        # Create a GUI
+        root = tk.Tk()
+        root.title('Flare clustering')
+        root.geometry('500x500')
+
+        # Create a frame for the input parameters
+        frame_input = tk.Frame(root)
+        frame_input.pack(side='top', fill='both', expand=True)
+
+        # Create a frame for the buttons
+        frame_buttons = tk.Frame(root)
+        frame_buttons.pack(side='bottom', fill='both', expand=True)
+
+        # Add a field for the filepath
+        label_filepath = tk.Label(frame_input, text='File location and path:')
+        label_filepath.grid(row=0, column=0)
+        entry_filepath = tk.Entry(frame_input)
+        entry_filepath.grid(row=0, column=1)
+
+        # Add a field for the closeness parameter
+        label_closeness_param = tk.Label(frame_input, text='Closeness parameter:')
+        label_closeness_param.grid(row=1, column=0)
+        entry_closeness_param = tk.Entry(frame_input)
+        entry_closeness_param.grid(row=1, column=1)
+
+        # Add a field for the thresholds
+        label_threshold = tk.Label(frame_input, text='Threshold:')
+        label_threshold.grid(row=2, column=0)
+        entry_threshold = tk.Entry(frame_input)
+        entry_threshold.grid(row=2, column=1)
+
+        # Add a button to run the clustering algorithm
+        button_run = tk.Button(frame_buttons, text='Run', command=run_clustering)
+        button_run.pack(side='left', fill='both', expand=True)
+
+        # Start the GUI main event loop
+        root.mainloop()
+
+        #Add a square in the gui where a plot of the clusterd as well as non-clustered flares 
+        #is shown
+        '''
+        #Make a square for the plot in the gui
+        plt.figure()
+        plt.scatter(DFdata[varstrings['UTM_X']].values,DFdata[varstrings['UTM_Y']].values,
+                    s = 2*np.pi*DFdata[varstrings['Radius']].values,
+                    c = DFdata[varstrings['Flowrate']].values)
+        plt.scatter(clusters['xloc'],clusters['yloc'],s = clusters['area'],
+                    c = clusters['flow'],marker = 'x')
+        plt.xlabel('UTM X [m]')
+        plt.ylabel('UTM Y [m]')
+        plt.title('Acoustic footprints and clustered flares')
+        #Write a textbox explaining that the size of the circles are the footprint areas
+        #color is the flowrate and the x's are where the clusters are located
+        textstr = '\n'.join((
+            r'Circle size: Flare footprint area',
+            r'Color: Flare flowrate',
+            r'X: Cluster center'))
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.2)
+        plt.text(0.05, 0.95, textstr, transform=plt.gca().transAxes, fontsize=10,
+                verticalalignment='top', bbox=props)
+        #Make the plot appear in the gui
+        
+        canvas = FigureCanvasTkAgg(plt.gcf(), master=root)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        #Add a toolbar to the plot
+        toolbar = NavigationToolbar2Tk(canvas, root)
+        toolbar.update()
+        '''
     
     
  
