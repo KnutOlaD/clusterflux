@@ -600,22 +600,10 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     #Define opening angle of the echosounder to be able to calculate the depth column
     opening_angle_ES = 6.81 #degrees
 
-    '''
-    #Add all the clusters to the dataframe
-    for i in range(len(clusters['area'])):
-        DFclustered = DFclustered.append({'cluster_id': 'cluster_' + '_'.join(map(str,clusters['clusterlist'][i])),
-                                      varstrings['UTM_X']: clusters['xloc'][i],
-                                      varstrings['UTM_Y']: clusters['yloc'][i],
-                                      varstrings['lat']: lonlat[1][i],
-                                      varstrings['lon']: lonlat[0][i],
-                                      'UTM_zone': DFdata[varstrings['UTM_zone']][i],
-                                      'Area': clusters['area'][i],
-                                      'Average_depth': np.sqrt(clusters['area'][i]/np.pi)/np.tan(np.deg2rad(opening_angle_ES/2)),
-                                      'Average_Flowrate': clusters['flow'][i],
-                                      'Flares in cluster': len(clusters['clusterlist'][i])}, 
-                                      ignore_index=True)
-    
-    '''
+    ### Add all the clustered and non-clustered data to the DFclustered dataframe ###
+
+    #Add clustered data:
+
     # Create a list to hold all the cluster data
     data = []
 
@@ -639,10 +627,7 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     # into one DFclustered dataframe
     DFclustered = pd.concat([pd.DataFrame(d, index=[0]) for d in data], ignore_index=True)
 
-
-
-    #Add all the flares that did not overlap with at least 20% of their area as individual
-    #clusters to the dataframe
+    #Add all the non-clustered data: 
 
     all_indices = np.arange(len(DFdata[varstrings['Radius']]))
     #Find all indices that is not part of the indices array
