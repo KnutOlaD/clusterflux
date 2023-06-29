@@ -110,14 +110,14 @@ gui for giving the input parameters.
 
 Inputs: 
 filepath: string 
-	Path and filename of the excel file to be stored. 
+	Path and filename of the excel file to be stored. 	
 closeness_parameter: string
 	The preferred method for determining wether two flares
 	should be clustered or not. Options are 'distance' or 
 	'area'. The former uses the distance between the center of 
 	the flare observations as clustering criterion while the 
 	latter uses the amount of shared area between two flare 
-	observations
+	observations	
 threshold: The threshold tha determines if two flare observations are to 
 	be clustered. If closeness_param = 'area' the threshold is the 
 	fractional (between 0 and 1) overlap between the flares. If 
