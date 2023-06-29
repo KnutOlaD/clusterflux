@@ -53,7 +53,6 @@ import warnings
 import tkinter as tk
 import conversion as utm
 
-
 ################################################
 ################# FUNCTIONS ####################
 ################################################
@@ -105,10 +104,6 @@ def load_flare_data(filepath,
         The name of the column in the excel file that contains the UTM zone of the
         flare center location.
         Default: 'UTM_zone'
-    Depth: string.
-        The name of the column in the excel file that contains the depth of the
-        flare center location.
-        Default: 'Depth'
     Radius: string.
         The name of the column in the excel file that contains the radius of the
         flare footprint.
