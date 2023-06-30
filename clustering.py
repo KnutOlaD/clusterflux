@@ -857,7 +857,7 @@ if __name__ == '__main__':
         
         ### Set input parameters ###
         #Path to the excel file containing the flare data
-        filepath = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
+        filepath = ''
 
         #Preferred method for clustering the flares. Options are 'distance' and 'area'
         closeness_param = 'area' #can be 'area' or 'distance'
