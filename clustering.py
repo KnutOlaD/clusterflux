@@ -857,15 +857,17 @@ if __name__ == '__main__':
         
         ### Set input parameters ###
         #Path to the excel file containing the flare data
-        filepath = ''
+        filepath = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
 
         #Preferred method for clustering the flares. Options are 'distance' and 'area'
         closeness_param = 'area' #can be 'area' or 'distance'
 
-        #Threshold for clustering the flares. If closeness_param = 'distance' the threshold is the distance between the flares
-        #in number of flare footprint radii (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
-        #If closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap between the flares.
-        threshold = 0.9 #can be fraction of overlapping area, or number of flare footprint radii
+        #Threshold for clustering the flares. If closeness_param = 'distance' the threshold 
+        # is the distance between the flares in number of flare footprint radii 
+        #(Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold). If 
+        #closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap 
+        # between the flares. 
+        threshold = 0.2 #can be fraction of overlapping area, or number of flare footprint radii
 
         #Run master function
         master_func(filepath,closeness_param,threshold,plot=True)
