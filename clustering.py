@@ -358,6 +358,12 @@ def get_close_flares(xloc_or_lat,
         #Find the indices of the flares that are within the threshold distance of each other
         #which is given by the threshold*radius
         indices = np.transpose(np.where(flare_dists < threshold*radius))
+        #check if indices is empty
+        if len(indices) == 0:
+            #Create error message and stop the program
+            raise Exception("There are no flare observations to be clustered with the " 
+                            "given closeness_param and threshold.")       
+            
         #Remove all diagonal matches (where indices[i,:] is the same number)
         indices = indices[indices[:,0] != indices[:,1],:]
 
@@ -378,6 +384,11 @@ def get_close_flares(xloc_or_lat,
         #Find the indices of the flares that overlap with at least the overlap threshold 
         #of their area
         indices = np.transpose(np.where(frac_flare_shared_areas > threshold))
+        #check if indices is empty
+        if len(indices) == 0:
+            raise Exception("There are no flare observations to be clustered with the  " 
+                            "given closeness_param and threshold.")        
+            
 
     #Find repeated and/or mirrored pairs in the indices array
     #Find the indices of the repeated pairs
@@ -605,7 +616,6 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
 
 
     ### Add all the clustered and non-clustered data to the DFclustered dataframe ###
-
     #Add clustered data:
 
     # Create a list to hold all the cluster data
@@ -855,7 +865,7 @@ if __name__ == '__main__':
         #Threshold for clustering the flares. If closeness_param = 'distance' the threshold is the distance between the flares
         #in number of flare footprint radii (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
         #If closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap between the flares.
-        threshold = 0.5 #can be fraction of overlapping area, or number of flare footprint radii
+        threshold = 0.9 #can be fraction of overlapping area, or number of flare footprint radii
 
         #Run master function
         master_func(filepath,closeness_param,threshold,plot=True)
