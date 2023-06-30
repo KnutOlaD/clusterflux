@@ -37,6 +37,9 @@ save_clustered_data: Creates a dataframe with clustered flares and their locatio
 the flares that were not clustered as individual clusters. Saves the dataframe to an excel file
 with path/filename filepath.
 
+write_cluster_textfile: Writes a textfile listing all the flare observations included in 
+each cluster as well as all the flare observations that were not clustered.
+
 INITIATION:
 This is where you set input parameters and runs the whole thing! :-)
 
@@ -693,7 +696,7 @@ def write_cluster_textfile(filepath,clusterlist,indices,DFdata):
         f.write('########################################\n')
         f.write('\n')
         for i in range(len(clusterlist)):
-            f.write('cluster_' + str(i))
+            f.write('cluster_' + str(i+1))
             #List all the flare names in the clusterb ("Field_Name" in the input file)
             for j in range(len(clusterlist[i])):
                 if j == 0:
@@ -711,9 +714,9 @@ def write_cluster_textfile(filepath,clusterlist,indices,DFdata):
         counter = 0
         for i in range(len(DFdata.index)):
             if i not in indices[:,0] and i not in indices[:,1]:
-                counter = counter + 1
-                f.write('cluster_' + str(counter+len(clusterlist)))
+                f.write('cluster_' + str(counter+len(clusterlist)+1))
                 f.write('\t' + DFdata.index[i] + '\n')
+                counter = counter + 1
         #Save the file to the same folder as the input file
 
 ###############################################################################################
@@ -743,7 +746,9 @@ def master_func(filepath,closeness_param,threshold,plot = True):
         Dataframe containing the clustered flare data.
 
     Creates an .xslx file with the clustered flare data named "filename + clustered.xlsx" and 
-    stores it in the same folder as filename. Creates a plot if plot=True.
+    stores it in the same folder as filename. Creates a plot if plot=True. Creates a .txt file
+    with the names of the flares in each cluster and the cluster name and the names of the flares
+    that were not clustered.
     '''
     ### Load the data ###
     DFdata,varstrings = load_flare_data(filepath)
@@ -845,12 +850,12 @@ if __name__ == '__main__':
         filepath = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
 
         #Preferred method for clustering the flares. Options are 'distance' and 'area'
-        closeness_param = 'distance' #can be 'area' or 'distance'
+        closeness_param = 'area' #can be 'area' or 'distance'
 
         #Threshold for clustering the flares. If closeness_param = 'distance' the threshold is the distance between the flares
         #in number of flare footprint radii (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
         #If closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap between the flares.
-        threshold = 1.8 #can be fraction of overlapping area, or number of flare footprint radii
+        threshold = 0.5 #can be fraction of overlapping area, or number of flare footprint radii
 
         #Run master function
         master_func(filepath,closeness_param,threshold,plot=True)
