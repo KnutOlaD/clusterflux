@@ -55,9 +55,10 @@ Creates a .txt file with the names of the flares in each cluster and the cluster
 name and the names of the flares that were not clustered.
 
 
-##############################
-######### CONTENTS ###########
-##############################
+####################
+##### CONTENTS #####
+####################
+
 
 -----------------------------------------------
 clustering.py:
