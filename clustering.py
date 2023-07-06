@@ -50,7 +50,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 import tkinter as tk
+import os
+#Set path to the folder where this script is located (to avoid cannot find conversion-error)
+script_path = os.path.abspath(__file__)#path to script
+script_dir = os.path.dirname(script_path)#path to directory
+os.sys.path.append(script_dir)
 import conversion as utm
+
 
 ################################################
 ################# FUNCTIONS ####################
@@ -796,7 +802,10 @@ def master_func(filepath,closeness_param,threshold,plot = True):
     #and all the flares that were not clustered    
 
     if plot == True:
-        #Make a plot of all the clustered and non-clustered flare areas
+        #Make a plot of all the clustered and non-clustered flare areas on a map
+        #Import map of the area
+
+        
         plt.figure()
         plt.scatter(DFdata[varstrings['UTM_X']].values,DFdata[varstrings['UTM_Y']].values,
                     s = 2*np.pi*DFdata[varstrings['Radius']].values,
@@ -824,7 +833,9 @@ def master_func(filepath,closeness_param,threshold,plot = True):
 ###############################################################################################
 
 def run_clustering():
-    filepath = entry_filepath.get()
+    filepath = entry_filepath.get().replace('\\', '\\\\')
+    #Check that filepath does not contain double double backslashes
+    filepath.replace('\\\\\\\\','\\\\')
     closeness_param = entry_closeness_param.get()
     threshold = float(entry_threshold.get())
     
@@ -847,7 +858,7 @@ if __name__ == '__main__':
 
     #Run GUI version or non gui version trigger
 
-    runGUI = False #Set to True to run the GUI version, False to run the non GUI version
+    runGUI = True #Set to True to run the GUI version, False to run the non GUI version
 
     if runGUI == False:
 
@@ -857,8 +868,9 @@ if __name__ == '__main__':
         
         ### Set input parameters ###
         #Path to the excel file containing the flare data
-        filepath = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
-
+        #PS: Don't use double backslashes, don't remove the r.
+        filepath = r'C:\Users\kdo000\Dropbox\post_doc\Marie_project\data\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
+           
         #Preferred method for clustering the flares. Options are 'distance' and 'area'
         closeness_param = 'area' #can be 'area' or 'distance'
 
@@ -900,6 +912,8 @@ if __name__ == '__main__':
         label_filepath.grid(row=0, column=0)
         entry_filepath = tk.Entry(frame_input)
         entry_filepath.grid(row=0, column=1)
+        #Make this field larger
+        entry_filepath.config(width=50)
 
         # Add a field for the closeness parameter
         label_closeness_param = tk.Label(frame_input, text='Closeness parameter:')
@@ -954,3 +968,12 @@ if __name__ == '__main__':
     
     
  
+######### TESTING MAP PLOTTING #########
+
+from osgeo import gdal
+
+#Import map of the area
+filename = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\dybdedata\\data\\NED\\NED_0.ned'
+
+#Load the map using gdal
+
