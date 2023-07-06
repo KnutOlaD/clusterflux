@@ -232,8 +232,7 @@ def get_distance(x_locs,y_locs):
 
     for i in range(len(x_locs)):
         for j in range(len(x_locs)):
-            dist[i,j] = np.sqrt((x_locs[i]-x_locs[j])**2+(y_locs[i]-y_locs[j])**2)
-    
+            dist[i,j] = np.sqrt((x_locs[i]-x_locs[j])**2+(y_locs[i]-y_locs[j])**2) 
     return dist
 
 ###############################################################################################
@@ -548,11 +547,12 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,varstrings,indices):
     #Calculate the average flowrate of the cluster (avg_flow_per_area*area)
     clusters['flow'] = clusters['area']*avg_flow_per_area
 
-    #DEPRECATED: Calculate the average flowrate of the cluster (sum of flowrates of all flares in cluster)
-    for i in range(len(clusterlist)):
-        for j in range(len(clusterlist[i])):
-            clusters['flow'][i] = np.mean(clusters['flow'][i] + 
-                                          DFdata[varstrings['Flowrate']].values[clusterlist[i][j]])
+    ### DEPRECATED: Calculate the average flowrate of the cluster (sum of flowrates of all flares in cluster)
+    #for i in range(len(clusterlist)):
+    #    for j in range(len(clusterlist[i])):
+    #        clusters['flow'][i] = np.mean(clusters['flow'][i] + 
+    #                                      DFdata[varstrings['Flowrate']].values[clusterlist[i][j]])
+    
     #************************************************************************************************
 
     #Calculate the geometric center of each cluster
@@ -637,7 +637,7 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
         varstrings['lon']: lonlat[0][i],
         'UTM_zone': DFdata[varstrings['UTM_zone']][i],
         'Area [m^2]': clusters['area'][i],
-        'Average_depth': np.mean(np.sqrt(avg_area[clusters['clusterlist'][i]])/
+        'Average_depth': -np.mean(np.sqrt(avg_area[clusters['clusterlist'][i]])/
                                  np.sqrt(np.pi*np.tan(np.deg2rad(opening_angle_ES/2))**2)),
         'Total_Flowrate': clusters['flow'][i],
         'Flares in cluster': len(clusters['clusterlist'][i])}
@@ -669,7 +669,7 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
             varstrings['lon']: DFdata[varstrings['lon']].values[indices_lonely[i]],
             'UTM_zone': DFdata[varstrings['UTM_zone']][indices_lonely[i]],
             'Area [m^2]': np.round(np.pi * DFdata[varstrings['Radius']].values[indices_lonely[i]]**2, 0),
-            'Average_depth': DFdata[varstrings['Radius']].values[indices_lonely[i]] / np.tan(np.deg2rad(opening_angle_ES / 2)),
+            'Average_depth': -DFdata[varstrings['Radius']].values[indices_lonely[i]] / np.tan(np.deg2rad(opening_angle_ES / 2)),
             'Total_Flowrate': DFdata[varstrings['Flowrate']].values[indices_lonely[i]],
             'Flares in cluster': 1
         }
@@ -858,7 +858,7 @@ if __name__ == '__main__':
 
     #Run GUI version or non gui version trigger
 
-    runGUI = True #Set to True to run the GUI version, False to run the non GUI version
+    runGUI = False #Set to True to run the GUI version, False to run the non GUI version
 
     if runGUI == False:
 
