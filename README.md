@@ -18,11 +18,46 @@ observations which were included in clusters and which flare
 observations were non-clustered (lonely flareas). 
 
 
-########################################
-##### CONTENTS AND HOW TO INITIATE #####
-########################################
+######################
+##### INITIATION #####
+######################
 
-Includes:
+There are two initation options which is set by the 
+beginning of the INITIATION section in the clustering.py script 
+by choosing the "runGUI" parameter to runGUI == False or 
+runGUI == True . The former makes the script run dynamically
+as a normal python script while the latter returns a simple
+gui for giving the input parameters. 
+
+Inputs: 
+filepath: string 
+	Path and filename of the excel file to be stored. 	
+closeness_parameter: string
+	The preferred method for determining wether two flares
+	should be clustered or not. Options are 'distance' or 
+	'area'. The former uses the distance between the center of 
+	the flare observations as clustering criterion while the 
+	latter uses the amount of shared area between two flare 
+	observations	
+threshold: The threshold tha determines if two flare observations are to 
+	be clustered. If closeness_param = 'area' the threshold is the 
+	fractional (between 0 and 1) overlap between the flares. If 
+	closeness_param = 'distance' the threshold is the distance between '
+	the flares number of flare footprint radii.
+
+Ouputs: 
+DFclustered: pandas dataframe
+	Dataframe containing the clustered flare data.
+
+Creates an .xslx file with clustered flare data named "filename + clustered.xlsx"
+and stores it in the same folder as filename. Creates a plot if plot=True. 
+Creates a .txt file with the names of the flares in each cluster and the cluster 
+name and the names of the flares that were not clustered.
+
+
+##############################
+######### CONTENTS ###########
+##############################
 
 -----------------------------------------------
 clustering.py:
@@ -97,41 +132,6 @@ Saves the dataframe to an excel file with path/filename filepath.
 write_cluster_textfile: Writes a textfile listing all the 
 flare observations included in each cluster as well as all 
 the flare observations that were not clustered.
-
-
-INITIATION: 
-
-There are two initation options which is set by the 
-beginning of the INITIATION section in the script by 
-choosing the "runGUI" parameter to runGUI == False or 
-runGUI == True . The former makes the script run dynamically
-as a normal python script while the latter returns a simple
-gui for giving the input parameters. 
-
-Inputs: 
-filepath: string 
-	Path and filename of the excel file to be stored. 	
-closeness_parameter: string
-	The preferred method for determining wether two flares
-	should be clustered or not. Options are 'distance' or 
-	'area'. The former uses the distance between the center of 
-	the flare observations as clustering criterion while the 
-	latter uses the amount of shared area between two flare 
-	observations	
-threshold: The threshold tha determines if two flare observations are to 
-	be clustered. If closeness_param = 'area' the threshold is the 
-	fractional (between 0 and 1) overlap between the flares. If 
-	closeness_param = 'distance' the threshold is the distance between '
-	the flares number of flare footprint radii.
-
-Ouputs: 
-DFclustered: pandas dataframe
-	Dataframe containing the clustered flare data.
-
-Creates an .xslx file with clustered flare data named "filename + clustered.xlsx"
-and stores it in the same folder as filename. Creates a plot if plot=True. 
-Creates a .txt file with the names of the flares in each cluster and the cluster 
-name and the names of the flares that were not clustered.
 
 IMPORTANT NOTES: 
 
