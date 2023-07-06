@@ -59,8 +59,6 @@ name and the names of the flares that were not clustered.
 ##### CONTENTS #####
 ####################
 
-
------------------------------------------------
 clustering.py:
 -----------------------------------------------
 Author: Knut Ola Dølven, knut.o.dolven@uit.no
@@ -140,10 +138,8 @@ IMPORTANT NOTES:
 2. The path and filename of the excel file needs to have double 
 backslashe's if you're running windows, i.e. the path C:\Users\
 should be written C:\\Users\\.
---------------------------------------------------------------
 
 
---------------------------------------------------------------
 conversion.py: 
 --------------------------------------------------------------
 Copied from the utm package by Tobias Bieniek
