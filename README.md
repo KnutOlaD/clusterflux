@@ -39,11 +39,15 @@ closeness_parameter: string
 	the flare observations as clustering criterion while the 
 	latter uses the amount of shared area between two flare 
 	observations	
-threshold: The threshold tha determines if two flare observations are to 
+threshold: The threshold that determines if two flare observations are to 
 	be clustered. If closeness_param = 'area' the threshold is the 
 	fractional (between 0 and 1) overlap between the flares. If 
 	closeness_param = 'distance' the threshold is the distance between '
 	the flares number of flare footprint radii.
+method: The chosen method for calculating the flowrate for the cluster. Can
+	be either 'vanilla' or 'gridded_average'. The vanilla method is 
+	described in Veloso et al., 2015 and gridded_average in the theory
+	document in this repository.
 
 Ouputs: 
 DFclustered: pandas dataframe

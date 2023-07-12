@@ -1021,9 +1021,10 @@ def run_clustering():
     filepath.replace('\\\\\\\\','\\\\')
     closeness_param = entry_closeness_param.get()
     threshold = float(entry_threshold.get())
+    method = entry_method.get()
     
     # Call your master_func with the retrieved input values
-    master_func(filepath, closeness_param, threshold)
+    master_func(filepath, closeness_param, threshold, method = method, plot=True)
 
 '''
 GUI function
@@ -1041,7 +1042,7 @@ if __name__ == '__main__':
 
     #Run GUI version or non gui version trigger
 
-    runGUI = False #Set to True to run the GUI version, False to run the non GUI version
+    runGUI = True #Set to True to run the GUI version, False to run the non GUI version
 
     if runGUI == False:
 
@@ -1065,7 +1066,11 @@ if __name__ == '__main__':
         threshold = 1.8 #can be fraction of overlapping area, or number of flare footprint radii
 
         #Run master function
-        master_func(filepath,closeness_param,threshold,method = 'vanilla',plot=True)
+        master_func(filepath,
+                    closeness_param,
+                    threshold,
+                    ethod = 'vanilla',
+                    plot=True)
 
     ##################################################
     ################# GUI VERSION ####################
@@ -1109,6 +1114,12 @@ if __name__ == '__main__':
         label_threshold.grid(row=2, column=0)
         entry_threshold = tk.Entry(frame_input)
         entry_threshold.grid(row=2, column=1)
+
+        # Add a field for the method
+        label_method = tk.Label(frame_input, text='Method:')
+        label_method.grid(row=3, column=0)
+        entry_method = tk.Entry(frame_input)
+        entry_method.grid(row=3, column=1)
 
         # Add a button to run the clustering algorithm
         button_run = tk.Button(frame_buttons, text='Run', command=run_clustering)
