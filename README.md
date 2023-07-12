@@ -116,12 +116,20 @@ parameters. Can calculate closeness based on distance between
 footprint center or the fractional (%) shared area between 
 the footprints.
 
-cluster_flares_mario: Clusters flares that have overlapping 
+cluster_flares_vanilla: Clusters flares that have overlapping 
 areas/are within a certain distance of each other (this is 
 done through get_close_flares) and calculates the total area 
 and flowrate of each cluster. The function returns a dictionary 
 with the cluster info. Based on method described in
 Veloso et al., 2015, doi: 10.1002/lom3.10024
+
+cluster_flowrate_gridded_averaging: Calculates the total area 
+and flowrate of a flare cluster by gridding the cluster area, 
+calculating the flowrate of each grid cell for each flare in the 
+cluster, and averaging the flowrate of each grid cell over all 
+the flares in the cluster. The function returns a dictionary with 
+the cluster info. Based on method described in the memo 
+accompanying this script.
 
 save_clustered_data: Creates a dataframe with clustered 
 flares and their locations and flowrates together with

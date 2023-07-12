@@ -28,10 +28,15 @@ to return a list of pairs with indices of flares that are defined as close to ea
 according to the closeness_param and threshold parameters. Can calculate closeness based
 on distance between footprint center or the fractional (%) shared area between the footprints.
 
-cluster_flares_mario: Clusters flares that have overlapping areas/are within a certain distance of each other
+cluster_flowrate_vanilla: Clusters flares that have overlapping areas/are within a certain distance of each other
 (this is done through get_close_flares) and calculates the total area and flowrate
 of each cluster. The function returns a dictionary with the cluster info. Based on method described in
 Veloso et al., 2015, doi: 10.1002/lom3.10024
+
+cluster_flowrate_gridded_averaging: Calculates the total area and flowrate of a flare cluster by 
+gridding the cluster area, calculating the flowrate of each grid cell for each flare in the cluster,
+and averaging the flowrate of each grid cell over all the flares in the cluster. The function returns
+a dictionary with the cluster info. Based on method described in the memo accompanying this script.
 
 save_clustered_data: Creates a dataframe with clustered flares and their locations and flowrates together with
 the flares that were not clustered as individual clusters. Saves the dataframe to an excel file
@@ -410,7 +415,7 @@ def get_close_flares(xloc_or_lat,
 
 ###############################################################################################
 
-def cluster_flares_mario(DFdata,UTM_X,UTM_Y,varstrings,indices):
+def cluster_flowrate_vanilla(DFdata,UTM_X,UTM_Y,varstrings,indices):
     '''
     Clusters flares that have overlapping areas/are within a certain distance of each other
     (this is done through a different function) and calculates the total area and flowrate
@@ -564,6 +569,163 @@ def cluster_flares_mario(DFdata,UTM_X,UTM_Y,varstrings,indices):
 
 ###############################################################################################
 
+def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
+    '''
+    Clusters flares that have overlapping areas/are within a certain distance of each other
+    (this is done through a different function) and calculates the total area and flowrate
+    of each cluster. The function returns a dictionary with the cluster info.
+    
+    The method follows the method outlined in the memo accompanying this repository. Essensially
+    the method defines a grid for the cluster area, finds the gridded flux per unit area for 
+    each flare observation and calculates the average where flare observation areas overlap.
+    Sums up the results for each cluster.
+
+    The first part of this script is the same as the cluster_flowrate_vanilla function, since 
+    it essentially only defines the structure of the output dictionary and defines a
+    grid. 
+
+    Input:
+    DFdata: pandas dataframe
+        The dataframe containing the flare data.
+    UTM_X: numpy array
+        The x locations of the flares that have at least one overlapping flare
+    UTM_Y: numpy array
+        The y locations of the flares that have at least one overlapping flare
+    indices: numpy array
+        The indices of the flares that have at least one overlapping flare
+    varstrings: dictionary
+        Dictionary containing the column identifiers in the excel file.
+    
+    Output:
+    clusters: dictionary
+        dictionary containing the following keys:
+        area: numpy array
+            The total area of each cluster.
+        flow: numpy array
+            The total flowrate of each cluster.
+        xloc: numpy array  
+            The x location of the center of each cluster.
+        yloc: numpy array
+            The y location of the center of each cluster.
+        clusterlist: list
+            A list of lists containing the indices of the flares in each cluster.
+    '''
+
+     #Check that indices contains any indices
+    if len(indices) == 0:
+        warnings.warn('No clusters in indices list')
+        return None
+
+    #list of clusters, each cluster is a list of indices
+    clusterlist = []
+    #clusterdictionary which shall contain the cluster info we calculate
+    clusters = {}
+
+        #loop over all flares
+    for i in range(len(indices)):
+        if i == 0:
+            #add the first flare to the clusterlist
+            clusterlist.append([indices[i,0],indices[i,1]])
+        else:
+            #loop over all clusters and check if any of the flares is already in a cluster
+            #if so, add the other flare to the cluster
+            foundhome = 0 #flag to check if the flare will find a cluster in the next loop
+            for j in range(len(clusterlist)):
+                if indices[i,0] in clusterlist[j]:
+                    clusterlist[j].append(indices[i,1])
+                    #keep clusterlist[j] unique
+                    clusterlist[j] = list(set(clusterlist[j]))
+                    foundhome = 1
+                if indices[i,1] in clusterlist[j]:
+                    clusterlist[j].append(indices[i,0])
+                    #keep clusterlist[j] unique
+                    clusterlist[j] = list(set(clusterlist[j]))
+                    foundhome = 1
+            #if the flare is not in a cluster, add it to the clusterlist as a separate
+            #cluster
+            if foundhome == 0:
+                clusterlist.append([indices[i,0],indices[i,1]])
+
+    #Calculate the total area and flowrate of each cluster
+    clusters['area'] = np.zeros(len(clusterlist))
+    clusters['flow'] = np.zeros(len(clusterlist))
+    clusters['xloc'] = np.zeros(len(clusterlist))
+    clusters['yloc'] = np.zeros(len(clusterlist))
+    clusters['clusterlist'] = clusterlist
+
+    #loop over all clusters and define a grid and 
+    for i in range(len(clusterlist)):
+        #Define grid according to minimum and maximum x and y locations of the flares
+        #in the cluster
+        x_min = np.min(UTM_X[clusterlist[i]])-np.max(DFdata[varstrings['Radius']].values[clusterlist[i]])
+        x_max = np.max(UTM_X[clusterlist[i]])+np.max(DFdata[varstrings['Radius']].values[clusterlist[i]])
+        y_min = np.min(UTM_Y[clusterlist[i]])-np.max(DFdata[varstrings['Radius']].values[clusterlist[i]])
+        y_max = np.max(UTM_Y[clusterlist[i]])+np.max(DFdata[varstrings['Radius']].values[clusterlist[i]])
+        #Define the grid spacing
+        grid_spacing = 1.0 #1m grid spacing
+        #Create the grid
+        x_grid = np.arange(x_min,x_max,grid_spacing)
+        y_grid = np.arange(y_min,y_max,grid_spacing)
+        #Extend the shortest axis of the grid to make it square (easier to work with)
+        while len(x_grid) > len(y_grid):
+            y_grid = np.append(y_grid,y_grid[-1]+grid_spacing)
+        while len(x_grid) < len(y_grid):
+            x_grid = np.append(x_grid,x_grid[-1]+grid_spacing)
+        #Create two zero matrices with the same size as the grid, one to collect the flowrates and 
+        #one to collect the areas and overlapping areas (represented by ones, twos, threes, etc.)
+        grid_flow = np.zeros((len(x_grid),len(y_grid)))
+        grid_overlap = np.zeros((len(x_grid),len(y_grid)))
+        #loop over all flares in the cluster and calculate the flux per unit area for each flare observation
+        #and take the average where flare observation areas overlap
+        for j in range(len(clusterlist[i])):
+            #Distance between the flare and all the y coordinates in the grid
+            dist_y = np.abs(y_grid-UTM_Y[clusterlist[i][j]])
+            #Distance between the flare and all the x coordinates in the grid
+            dist_x = np.abs(x_grid-UTM_X[clusterlist[i][j]])
+            #Calculate the distance between the flare and all the grid cells
+            #This will be a matrix with the same size as the grid
+            dist = np.sqrt(dist_x**2+dist_y[:,None]**2)
+            #collect the indices for all the grid cells that are covered by the flare
+            indices = np.where(dist < DFdata[varstrings['Radius']].values[clusterlist[i][j]])
+            #calculate the area of the gridded flare area
+            area = len(indices[0])*grid_spacing**2
+            #calculate the flux per unit area for the flare
+            flux_per_area = DFdata[varstrings['Flowrate']].values[clusterlist[i][j]]/area
+            #add the flux per unit area to the grid_flow matrix
+            grid_flow[indices] = grid_flow[indices] + flux_per_area
+            #add ones to the grid_overlap matrix where the flare is located
+            grid_overlap[indices] = grid_overlap[indices] + 1
+        
+        #Divide elementwise with grid_overlap to get the average flux per unit area for each grid cell
+        #where grid_overlap is not zero
+        grid_flow[np.where(grid_overlap != 0)] = grid_flow[np.where(grid_overlap != 0)]/grid_overlap[np.where(grid_overlap != 0)]
+
+        #Plot the overlap-map for the cluster and the flowrates for the cluster
+        plt.figure()
+        plt.subplot(1,2,1)
+        plt.imshow(grid_overlap)
+        plt.colorbar()
+        plt.subplot(1,2,2)
+        plt.imshow(grid_flow)
+        plt.colorbar()
+        plt.show()
+
+        #Calculate the total area of the cluster, this is just the number of elements in the grid_overlap
+        #matrix that are not zero times the grid_spacing squared
+        clusters['area'][i] = np.sum(grid_overlap != 0)*grid_spacing**2
+        #Calculate the total flux of the cluster by dividing grid_flow elementwise with grid_overlap where
+        #grid_overlap is not zero and summing up the resuls
+        clusters['flow'][i] = np.sum(grid_flow)
+
+        #Calculate the geometric center of each cluster
+        for i in range(len(clusterlist)):
+            clusters['xloc'][i] = np.mean(UTM_X[clusterlist[i]])
+            clusters['yloc'][i] = np.mean(UTM_Y[clusterlist[i]])
+
+    return clusters
+
+###############################################################################################
+
 def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
     '''
     Creates a dataframe with clustered flares and their locations and flowrates together with 
@@ -618,8 +780,6 @@ def save_clustered_data(filepath,clusters,indices,DFdata,varstrings):
 
     #Define opening angle of the echosounder to be able to calculate the depth column
     opening_angle_ES = 6.81 #degrees
-
-
 
     ### Add all the clustered and non-clustered data to the DFclustered dataframe ###
     #Add clustered data:
@@ -737,7 +897,11 @@ def write_cluster_textfile(filepath,clusterlist,indices,DFdata):
 
 ###############################################################################################
 
-def master_func(filepath,closeness_param,threshold,plot = True):
+def master_func(filepath,
+                closeness_param,
+                threshold,
+                method = 'gridded_averaging',
+                plot = True):
     '''
     Function that do the clustering using the functions described above. Returns a dataframe with
     the clustered flare data and saves the dataframe to a new excel file. Also makes a plot of all the
@@ -753,6 +917,9 @@ def master_func(filepath,closeness_param,threshold,plot = True):
         the threshold is the fractional (between 0 and 1) overlap between the flares. If closeness_param = 'distance'
         the threshold is the distance between the flares number of flare footprint radii (Veloso et al., 
         2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
+    method: string
+        The method used to calculate the flowrate of the clusters. Options are 'vanilla' and 'gridded_averaging'.
+        Default: 'gridded_averaging'
     plot: boolean
         If True the function makes a plot of all the flares and the clusters.
         Default: True
@@ -780,7 +947,23 @@ def master_func(filepath,closeness_param,threshold,plot = True):
                      closeness_param = closeness_param)
 
     #Calculate the area, center location and flowrate of the clusters
-    clusters = cluster_flares_mario(DFdata,
+
+    #Check if the user wants to use the gridded averaging method or the vanilla method
+    if method == 'vanilla':
+        clusters = cluster_flowrate_vanilla(DFdata,
+                                    DFdata[varstrings['UTM_X']].values,
+                                    DFdata[varstrings['UTM_Y']].values,
+                                    varstrings,
+                                    indices)
+    elif method == 'gridded_averaging':
+        clusters = cluster_flowrate_gridded_averaging(DFdata,
+                                    DFdata[varstrings['UTM_X']].values,
+                                    DFdata[varstrings['UTM_Y']].values,
+                                    varstrings,
+                                    indices)
+    else:
+        warnings.warn('Method not recognized, using gridded averaging method')
+        clusters = cluster_flowrate_gridded_averaging(DFdata,
                                     DFdata[varstrings['UTM_X']].values,
                                     DFdata[varstrings['UTM_Y']].values,
                                     varstrings,
@@ -869,20 +1052,20 @@ if __name__ == '__main__':
         ### Set input parameters ###
         #Path to the excel file containing the flare data
         #PS: Don't use double backslashes, don't remove the r.
-        filepath = r'C:\Users\kdo000\Dropbox\post_doc\Marie_project\data\CAGE_18_02_FlareHunt-D20180523-T080503_4FR.xlsx'
+        filepath = r'filepath\filename.xlsx'
            
         #Preferred method for clustering the flares. Options are 'distance' and 'area'
-        closeness_param = 'area' #can be 'area' or 'distance'
+        closeness_param = 'distance' #can be 'area' or 'distance'
 
         #Threshold for clustering the flares. If closeness_param = 'distance' the threshold 
         # is the distance between the flares in number of flare footprint radii 
         #(Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold). If 
         #closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap 
         # between the flares. 
-        threshold = 0.2 #can be fraction of overlapping area, or number of flare footprint radii
+        threshold = 1.8 #can be fraction of overlapping area, or number of flare footprint radii
 
         #Run master function
-        master_func(filepath,closeness_param,threshold,plot=True)
+        master_func(filepath,closeness_param,threshold,method = 'vanilla',plot=True)
 
     ##################################################
     ################# GUI VERSION ####################
@@ -970,10 +1153,9 @@ if __name__ == '__main__':
  
 ######### TESTING MAP PLOTTING #########
 
-from osgeo import gdal
+#from osgeo import gdal
 
 #Import map of the area
-filename = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\dybdedata\\data\\NED\\NED_0.ned'
+#filename = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\dybdedata\\data\\NED\\NED_0.ned'
 
 #Load the map using gdal
-
