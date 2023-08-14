@@ -53,6 +53,7 @@ This is where you set input parameters and runs the whole thing! :-)
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import warnings
 import tkinter as tk
 import os
@@ -703,11 +704,20 @@ def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
         #Plot the overlap-map for the cluster and the flowrates for the cluster
         plt.figure()
         plt.subplot(1,2,1)
-        plt.imshow(grid_overlap)
-        plt.colorbar()
+        #Plot the grid_overlap matrix in a colorplot with discrete colors using something like pcolor
+        im = plt.imshow(grid_overlap)
+        cb = plt.colorbar(im,fraction=0.046, pad=0.04)
+        #Make colorbar ticks integers
+        cb.set_ticks(np.arange(0,np.max(grid_overlap)+1,1))
+        #Change the size of the colorbar
+        #Set limits for colorbar
+        plt.title('Number of observations')
+        #Increase the horizontal distance between the plots
+        plt.subplots_adjust(wspace=0.5)
         plt.subplot(1,2,2)
         plt.imshow(grid_flow)
-        plt.colorbar()
+        cb = plt.colorbar(im,fraction=0.046, pad=0.04)
+        plt.title('Average flux per unit area')
         plt.show()
 
         #Calculate the total area of the cluster, this is just the number of elements in the grid_overlap
@@ -915,8 +925,8 @@ def master_func(filepath,
     threshold: float
         The threshold for the overlap between two flares to be clustered. If closeness_param = 'area'
         the threshold is the fractional (between 0 and 1) overlap between the flares. If closeness_param = 'distance'
-        the threshold is the distance between the flares number of flare footprint radii (Veloso et al., 
-        2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
+        the threshold is the distance between the flare observation centerpoints in averaged acoustic footprint radii 
+        of the two observations (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
     method: string
         The method used to calculate the flowrate of the clusters. Options are 'vanilla' and 'gridded_averaging'.
         Default: 'gridded_averaging'
@@ -1106,19 +1116,25 @@ if __name__ == '__main__':
         # Add a field for the closeness parameter
         label_closeness_param = tk.Label(frame_input, text='Closeness parameter:')
         label_closeness_param.grid(row=1, column=0)
+        #make entry with default value
         entry_closeness_param = tk.Entry(frame_input)
+        entry_closeness_param.insert(0, 'distance')
         entry_closeness_param.grid(row=1, column=1)
 
         # Add a field for the thresholds
         label_threshold = tk.Label(frame_input, text='Threshold:')
         label_threshold.grid(row=2, column=0)
         entry_threshold = tk.Entry(frame_input)
+        #Create a default value
+        entry_threshold.insert(0, '1.99')
         entry_threshold.grid(row=2, column=1)
 
         # Add a field for the method
         label_method = tk.Label(frame_input, text='Method:')
         label_method.grid(row=3, column=0)
         entry_method = tk.Entry(frame_input)
+        #Create a default value
+        entry_method.insert(0, 'gridded_average')
         entry_method.grid(row=3, column=1)
 
         # Add a button to run the clustering algorithm
