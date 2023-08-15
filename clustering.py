@@ -500,6 +500,10 @@ def cluster_flowrate_vanilla(DFdata,UTM_X,UTM_Y,varstrings,indices):
     clusters['clusterlist'] = clusterlist
     #Create a grid with the cluster locations and areas for each cluster
     #loop over all clusters
+
+    #Calculate the flowrate per area for each flare observation
+    flow_per_area = DFdata[varstrings['Flowrate']].values/(np.pi*DFdata[varstrings['Radius']].values**2)
+
     for i in range(len(clusterlist)):
         #Define grid according to minimum and maximum x and y locations of the flares
         #in the cluster
@@ -536,22 +540,23 @@ def cluster_flowrate_vanilla(DFdata,UTM_X,UTM_Y,varstrings,indices):
             grid[np.where(dist < DFdata[varstrings['Radius']].values[clusterlist[i][j]])] = 1
         
             #Plot the grid, center, and flares in the cluster
-        plt.figure()
-        plt.imshow(grid)
-        plt.show()
-        
-        #sum up all the ones in the grid to get the total area covered by the flares
-        clusters['area'][i] = np.sum(grid)*grid_spacing**2
-    
-    #Calculate the flowrate per area for each flare
-    flow_per_area = DFdata[varstrings['Flowrate']].values/(np.pi*DFdata[varstrings['Radius']].values**2)
-
-    #Sum up the flowrate per area for each cluster
-    for i in range(len(clusterlist)):
+                #Plot the overlap-map for the cluster and the flowrates for the cluster
+           
+        #Calculate the average flowrate per area for the cluster
         avg_flow_per_area = sum(flow_per_area[clusterlist[i]])/len(clusterlist[i])
 
-    #Calculate the average flowrate of the cluster (avg_flow_per_area*area)
-    clusters['flow'] = clusters['area']*avg_flow_per_area
+        #sum up all the ones in the grid to get the total area covered by the flares
+        clusters['area'][i] = np.sum(grid)*grid_spacing**2
+
+        #Calculate the average flowrate of the cluster (avg_flow_per_area*area)
+        clusters['flow'][i] = clusters['area'][i]*avg_flow_per_area
+
+        #Plot the grid multiplied by the average flowrate
+        plt.figure()
+        plt.imshow(grid*avg_flow_per_area)
+        plt.colorbar()
+        plt.title('Flowrate per area of cluster '+str(i))
+        plt.show()        
 
     ### DEPRECATED: Calculate the average flowrate of the cluster (sum of flowrates of all flares in cluster)
     #for i in range(len(clusterlist)):
