@@ -438,7 +438,8 @@ def cluster_flowrate_vanilla(DFdata,UTM_X,UTM_Y,varstrings,indices):
     UTM_Y: numpy array
         The y locations of the flares that have at least one overlapping flare
     indices: numpy array
-        The indices of the flares that have at least one overlapping flare
+        Index pairs of the flares that are within threshold distance/exceed the overlap threshold 
+        of each other.
     varstrings: dictionary
         Dictionary containing the column identifiers in the excel file.
     
@@ -473,8 +474,8 @@ def cluster_flowrate_vanilla(DFdata,UTM_X,UTM_Y,varstrings,indices):
             #add the first flare to the clusterlist
             clusterlist.append([indices[i,0],indices[i,1]])
         else:
-            #loop over all clusters and check if any of the flares is already in a cluster
-            #if so, add the other flare to the cluster
+            #loop over all clusters and check if the flare observation i should be 
+            #added to any of the clusters
             foundhome = 0 #flag to check if the flare will find a cluster in the next loop
             for j in range(len(clusterlist)):
                 if indices[i,0] in clusterlist[j]:
@@ -487,10 +488,30 @@ def cluster_flowrate_vanilla(DFdata,UTM_X,UTM_Y,varstrings,indices):
                     #keep clusterlist[j] unique
                     clusterlist[j] = list(set(clusterlist[j]))
                     foundhome = 1
-            #if the flare is not in a cluster, add it to the clusterlist as a separate
+            #if none of the flare observations in the flare pair is not to be clustered
+            #with any of the already clustered data we add it to the clusterlist as a separate
             #cluster
             if foundhome == 0:
                 clusterlist.append([indices[i,0],indices[i,1]])
+                #keep clusterlist[j] unique
+                clusterlist[j] = list(set(clusterlist[j]))
+    #Go through clusterlist and merge all clusters where one or more flare observations in the 
+    #cluster are also in another cluster
+    #loop over all clusters
+    for i in range(len(clusterlist)):
+        #loop over all clusters again
+        for j in range(len(clusterlist)):
+            #if cluster i and j are not the same cluster
+            if i != j:
+                #if any of the flare observations in cluster i are also in cluster j
+                if isinstance(clusterlist[i], list) and isinstance(clusterlist[j], list):
+                    if any(item in clusterlist[i] for item in clusterlist[j]):
+                        #merge cluster i and j
+                        clusterlist[i] = list(set(clusterlist[i]+clusterlist[j]))
+                        #flag cluster j for removal
+                        clusterlist[j] = 9999
+    #Remove all the clusters that are flagged for removal
+    clusterlist = [x for x in clusterlist if x != 9999]
 
     #Calculate the total area and flowrate of each cluster
     clusters['area'] = np.zeros(len(clusterlist))
@@ -627,14 +648,14 @@ def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
     #clusterdictionary which shall contain the cluster info we calculate
     clusters = {}
 
-        #loop over all flares
+    #loop over all flares
     for i in range(len(indices)):
         if i == 0:
             #add the first flare to the clusterlist
             clusterlist.append([indices[i,0],indices[i,1]])
         else:
-            #loop over all clusters and check if any of the flares is already in a cluster
-            #if so, add the other flare to the cluster
+            #loop over all clusters and check if the flare observation i should be 
+            #added to any of the clusters
             foundhome = 0 #flag to check if the flare will find a cluster in the next loop
             for j in range(len(clusterlist)):
                 if indices[i,0] in clusterlist[j]:
@@ -647,10 +668,30 @@ def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
                     #keep clusterlist[j] unique
                     clusterlist[j] = list(set(clusterlist[j]))
                     foundhome = 1
-            #if the flare is not in a cluster, add it to the clusterlist as a separate
+            #if none of the flare observations in the flare pair is not to be clustered
+            #with any of the already clustered data we add it to the clusterlist as a separate
             #cluster
             if foundhome == 0:
                 clusterlist.append([indices[i,0],indices[i,1]])
+                #keep clusterlist[j] unique
+                clusterlist[j] = list(set(clusterlist[j]))
+    #Go through clusterlist and merge all clusters where one or more flare observations in the 
+    #cluster are also in another cluster
+    #loop over all clusters
+    for i in range(len(clusterlist)):
+        #loop over all clusters again
+        for j in range(len(clusterlist)):
+            #if cluster i and j are not the same cluster
+            if i != j:
+                #if any of the flare observations in cluster i are also in cluster j
+                if isinstance(clusterlist[i], list) and isinstance(clusterlist[j], list):
+                    if any(item in clusterlist[i] for item in clusterlist[j]):
+                        #merge cluster i and j
+                        clusterlist[i] = list(set(clusterlist[i]+clusterlist[j]))
+                        #flag cluster j for removal
+                        clusterlist[j] = 9999
+    #Remove all the clusters that are flagged for removal
+    clusterlist = [x for x in clusterlist if x != 9999]
 
     #Calculate the total area and flowrate of each cluster
     clusters['area'] = np.zeros(len(clusterlist))
@@ -1084,7 +1125,7 @@ if __name__ == '__main__':
         master_func(filepath,
                     closeness_param,
                     threshold,
-                    ethod = 'vanilla',
+                    method = 'vanilla',
                     plot=True)
 
     ##################################################
