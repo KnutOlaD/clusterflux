@@ -760,6 +760,8 @@ def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
             clusters['xloc'][i] = np.mean(UTM_X[clusterlist[i]])
             clusters['yloc'][i] = np.mean(UTM_Y[clusterlist[i]])
 
+        
+
     return clusters
 
 ###############################################################################################
@@ -1101,7 +1103,7 @@ if __name__ == '__main__':
         #(Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold). If 
         #closeness_param = 'area' the threshold is the fractional (between 0 and 1) overlap 
         # between the flares. 
-        threshold = 1.8 #can be fraction of overlapping area, or number of flare footprint radii
+        threshold = 1.99 #can be fraction of overlapping area, or number of flare footprint radii
 
         #Run master function
         master_func(filepath,
@@ -1205,12 +1207,3 @@ if __name__ == '__main__':
         '''
     
     
- 
-######### TESTING MAP PLOTTING #########
-
-#from osgeo import gdal
-
-#Import map of the area
-#filename = 'C:\\Users\\kdo000\\Dropbox\\post_doc\\Marie_project\\data\\dybdedata\\data\\NED\\NED_0.ned'
-
-#Load the map using gdal
