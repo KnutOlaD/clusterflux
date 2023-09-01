@@ -1,3 +1,7 @@
+Clustering solution for flux estimates based on gas bubble
+stream observations in single beam echo-sounder data using
+ridded averaging
+
 Script for doing flare clustering of single beam echosounder 
 flare data
 
