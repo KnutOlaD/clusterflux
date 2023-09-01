@@ -3,7 +3,7 @@ stream observations in single beam echo-sounder data using
 ridded averaging
 
 Script for doing flare clustering of single beam echosounder 
-flare data
+flare data. See theory.pdf for theory. 
 
 Contact info: 
 Knut Ola Dølven
