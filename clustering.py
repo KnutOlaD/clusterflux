@@ -1087,7 +1087,7 @@ if __name__ == '__main__':
 
     #Run GUI version or non gui version trigger
 
-    runGUI = False #Set to True to run the GUI version, False to run the non GUI version
+    runGUI = True #Set to True to run the GUI version, False to run the non GUI version
 
     if runGUI == True:
 
