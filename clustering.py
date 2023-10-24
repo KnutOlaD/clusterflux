@@ -743,8 +743,13 @@ def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
         #Increase the horizontal distance between the plots
         plt.subplots_adjust(wspace=0.5)
         plt.subplot(1,2,2)
-        plt.imshow(grid_flow)
-        cb = plt.colorbar(im,fraction=0.046, pad=0.04)
+        im2 = plt.imshow(grid_flow)
+        #Add a colorbar to the right of the subfigure
+        cb = plt.colorbar(im2,fraction=0.046, pad=0.04)
+
+
+        
+        #Position the colorbar on the right hand side of the plot
         plt.title('Average flux per unit area')
         plt.show()
 
@@ -1082,9 +1087,9 @@ if __name__ == '__main__':
 
     #Run GUI version or non gui version trigger
 
-    runGUI = True #Set to True to run the GUI version, False to run the non GUI version
+    runGUI = False #Set to True to run the GUI version, False to run the non GUI version
 
-    if runGUI == False:
+    if runGUI == True:
 
         #######################################################
         ################# NON GUI VERSION #####################
@@ -1094,7 +1099,7 @@ if __name__ == '__main__':
         #Path to the excel file containing the flare data
         #PS: Don't use double backslashes, don't remove the r.
         filepath = r'filepath\filename.xlsx'
-        
+                
         #Preferred method for clustering the flares. Options are 'distance' and 'area'
         closeness_param = 'distance' #can be 'area' or 'distance'
 
