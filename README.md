@@ -49,7 +49,7 @@ threshold: The threshold that determines if two flare observations are to
 	closeness_param = 'distance' the threshold is the distance between '
 	the flares number of flare footprint radii.
 method: The chosen method for calculating the flowrate for the cluster. Can
-	be either 'vanilla' or 'gridded_average'. The vanilla method is 
+	be either 'legacy' or 'gridded_average'. The legacy method is 
 	described in Veloso et al., 2015 and gridded_average in the theory
 	document in this repository.
 
@@ -124,7 +124,7 @@ parameters. Can calculate closeness based on distance between
 footprint center or the fractional (%) shared area between 
 the footprints.
 
-cluster_flares_vanilla: Clusters flares that have overlapping 
+cluster_flares_legacy: Clusters flares that have overlapping 
 areas/are within a certain distance of each other (this is 
 done through get_close_flares) and calculates the total area 
 and flowrate of each cluster. The function returns a dictionary 
