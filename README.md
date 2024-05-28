@@ -14,11 +14,14 @@ knut.o.dolven@uit.no
 ######################
 
 Clusters flare observations according to method described in 
-Veloso et al. (2015), doi: 10.1002/lom3.10024 , with some 
-added features. Sorts all the flares according to clusters. 
+Veloso et al. (2015), doi: 10.1002/lom3.10024. Includes a new
+cluster flux estimate solution called Gridded Averaging, which 
+gives a more realistic flux estimate. Also includes a new method
+for estimating seep area using the acoustic footprint of the echosounder
+Sorts all flares according to clusters.  
 Returns an excel sheet with the flowrate, area, and depth of 
 the clusters as well as a .txt file listing the name of flare 
-observations which were included in clusters and which flare 
+observations which were included in which clusters and which flare 
 observations were non-clustered (lonely flareas). 
 
 
@@ -156,7 +159,7 @@ backslashe's if you're running windows, i.e. the path C:\Users\
 should be written C:\\Users\\.
 
 
-conversion.py: 
+conversion.py: (included to avoid dependency issues)
 --------------------------------------------------------------
 Copied from the utm package by Tobias Bieniek
 Bidirectional UTM-WGS84 converter for python
