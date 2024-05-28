@@ -1,0 +1,136 @@
+########################################
+##### Clustered flare observations #####
+########################################
+
+cluster_1	cage_18_2_flare_D22_T015624_0011_25_75perc_c2
+		cage_18_2_flare_D22_T015624_0012_25_75perc_c2
+		cage_18_2_flare_D22_T015624_0013_25_75perc_c2
+		cage_18_2_flare_D22_T015624_0014_25_75perc_c2
+
+
+cluster_2	cage_18_2_flare_D22_T024324_0002_25_75perc_c3
+		cage_18_2_flare_D22_T024324_0003_25_75perc_c3
+		cage_18_2_flare_D22_T024324_0004_25_75perc_c3
+		cage_18_2_flare_D22_T024324_0005_25_75perc_c3
+		cage_18_2_flare_D22_T024324_0006_25_75perc_c3
+		cage_18_2_flare_D22_T024324_0007_25_75perc_c3
+
+
+cluster_3	cage_18_2_flare_D22_T041858_0004_25_75perc_c3
+		cage_18_2_flare_D22_T041858_0005_25_75perc_c3
+		cage_18_2_flare_D22_T041858_0006_25_75perc_c3
+
+
+cluster_4	cage_18_2_flare_D22_T082212_0002_25_75perc_c2
+		cage_18_2_flare_D22_T082212_0003_25_75perc_c2
+
+
+cluster_5	cage_18_02_80523-T105353_flare_0003_25_75perc_c2
+		cage_18_2_flare_D22_T082212_0008_25_75perc_c3
+
+
+cluster_6	cage_18_2_flare_D22_T082212_0009_25_75perc_c3
+		cage_18_02_80523-T105353_flare_0004_25_75perc_c2
+
+
+cluster_7	cage_18_02_80523-T132158_flare_0004_25_75perc_c2
+		cage_18_02_80523-T132158_flare_0005_25_75perc_c2
+		cage_18_02_80523-T132158_flare_0006_25_75perc_c2
+		cage_18_02_80523-T060435_flare_0001_25_75perc_c2
+		cage_18_02_80523-T060435_flare_0002_25_75perc_c3
+
+
+cluster_8	cage_18_02_80523-T075814_flare_0008_25_75perc_c2
+		cage_18_02_80523-T075814_flare_0009_25_75perc_c2
+		cage_18_02_80523-T075814_flare_0010_25_75perc_c2
+		cage_18_02_80523-T075814_flare_0006_25_75perc_c2
+		cage_18_02_80523-T075814_flare_0007_25_75perc_c2
+
+
+cluster_9	cage_18_02_80523-T114855_flare_0002_25_75perc_c3
+		cage_18_02_80523-T114855_flare_0003_25_75perc_c3
+		cage_18_02_80523-T114855_flare_0004_25_75perc_c3
+
+
+cluster_10	cage_18_02_80523-T081926_flare_0005_25_75perc_c1
+		cage_18_02_80523-T081926_flare_0006_25_75perc_c1
+
+
+##########################################
+#### Non-clustered flare observations ####
+##########################################
+
+cluster_11	cage_18_2_flare_D22_T015624_0008_25_75perc_c3
+cluster_12	cage_18_2_flare_D22_T015624_0009_25_75perc_c3
+cluster_13	cage_18_2_flare_D22_T015624_0010_25_75perc_c2
+cluster_14	cage_18_2_flare_D22_T024324_0001_25_75perc_c3
+cluster_15	cage_18_2_flare_D22_T024324_0008_25_75perc_c3
+cluster_16	cage_18_2_flare_D22_T024324_0009_25_75perc_c3
+cluster_17	cage_18_2_flare_D22_T024324_0014_25_75perc_c3
+cluster_18	cage_18_2_flare_D22_T024324_0015_25_75perc_c3
+cluster_19	cage_18_2_flare_D22_T024324_0016_25_75perc_c3
+cluster_20	cage_18_2_flare_D22_T032942_0003_25_75perc_c3
+cluster_21	cage_18_2_flare_D22_T032942_0004_25_75perc_c3
+cluster_22	cage_18_2_flare_D22_T050837_0003_25_75perc_c3
+cluster_23	cage_18_2_flare_D22_T063944_0001_25_75perc_c1
+cluster_24	cage_18_2_flare_D22_T063944_0003_25_75perc_c2
+cluster_25	cage_18_2_flare_D22_T063944_0004_25_75perc_c3
+cluster_26	cage_18_2_flare_D22_T063944_0005_25_75perc_c3
+cluster_27	cage_18_2_flare_D22_T063944_0013_25_75perc_c2
+cluster_28	cage_18_2_flare_D22_T063944_0014_25_75perc_c2
+cluster_29	cage_18_2_flare_D22_T063944_0015_25_75perc_c3
+cluster_30	cage_18_2_flare_D22_T072532_0001_25_75perc_c3
+cluster_31	cage_18_2_flare_D22_T072532_0006_25_75perc_c3
+cluster_32	cage_18_2_flare_D22_T072532_0008_25_75perc_c3
+cluster_33	cage_18_2_flare_D22_T072532_0010_25_75perc_c3
+cluster_34	cage_18_2_flare_D22_T082212_0001_25_75perc_c2
+cluster_35	cage_18_2_flare_D22_T082212_0010_25_75perc_c3
+cluster_36	cage_18_2_flare_D22_T082212_0012_25_75perc_c3
+cluster_37	cage_18_2_flare_D22_T090424_0009_25_75perc_c2
+cluster_38	cage_18_2_flare_D22_T095515_0001_25_75perc_c3
+cluster_39	cage_18_2_flare_D22_T122908_0001_25_75perc_c3
+cluster_40	cage_18_2_flare_D22_T132655_0001_25_75perc_c3
+cluster_41	cage_18_2_flare_D22_T155738_0001_25_75perc_c3
+cluster_42	cage_18_02_80523-T085051_flare_0002_25_75perc_c3
+cluster_43	cage_18_02_80523-T065955_flare_0006_25_75perc_c3
+cluster_44	cage_18_02_80523-T065955_flare_0007_25_75perc_c2
+cluster_45	cage_18_02_80523-T065955_flare_0008_25_75perc_c3
+cluster_46	cage_18_02_80523-T071146_flare_0001_25_75perc_c3
+cluster_47	cage_18_02_80523-T071146_flare_0002_25_75perc_c3
+cluster_48	cage_18_02_80523-T072617_flare_0003_25_75perc_c2
+cluster_49	cage_18_02_80523-T072617_flare_0004_25_75perc_c3
+cluster_50	cage_18_02_80523-T072617_flare_0005_25_75perc_c3
+cluster_51	cage_18_02_80523-T072617_flare_0006_25_75perc_c2
+cluster_52	cage_18_02_80523-T072617_flare_0007_25_75perc_c2
+cluster_53	cage_18_02_80523-T072617_flare_0008_25_75perc_c2
+cluster_54	cage_18_02_80523-T075814_flare_0011_25_75perc_c3
+cluster_55	cage_18_02_80523-T075814_flare_0012_25_75perc_c2
+cluster_56	cage_18_02_80523-T075814_flare_0013_25_75perc_c2
+cluster_57	cage_18_02_80523-T093153_flare_0002_25_75perc_c3
+cluster_58	cage_18_02_80523-T093153_flare_0003_25_75perc_c3
+cluster_59	cage_18_02_80523-T105353_flare_0005_25_75perc_c3
+cluster_60	cage_18_02_80523-T112521_flare_0002_25_75perc_c3
+cluster_61	cage_18_02_80523-T112521_flare_0005_25_75perc_c3
+cluster_62	cage_18_02_80523-T112521_flare_0006_25_75perc_c2
+cluster_63	cage_18_02_80523-T112521_flare_0007_25_75perc_c2
+cluster_64	cage_18_02_80523-T112521_flare_0008_25_75perc_c3
+cluster_65	cage_18_02_80523-T112521_flare_0009_25_75perc_c3
+cluster_66	cage_18_02_80523-T114855_flare_0001_25_75perc_c2
+cluster_67	cage_18_02_80523-T120250_flare_0003_25_75perc_c1
+cluster_68	cage_18_02_80523-T120250_flare_0004_25_75perc_c1
+cluster_69	cage_18_02_80523-T120250_flare_0005_25_75perc_c2
+cluster_70	cage_18_02_80523-T120250_flare_0006_25_75perc_c3
+cluster_71	cage_18_02_80523-T122630_flare_0001_25_75perc_c1
+cluster_72	cage_18_02_80523-T122630_flare_0004_25_75perc_c2
+cluster_73	cage_18_02_80523-T122630_flare_0005_25_75perc_c2
+cluster_74	cage_18_02_80523-T122630_flare_0006_25_75perc_c2
+cluster_75	cage_18_02_80523-T125551_flare_0002_25_75perc_c3
+cluster_76	cage_18_02_80523-T125551_flare_0003_25_75perc_c2
+cluster_77	cage_18_02_80523-T125551_flare_0005_25_75perc_c3
+cluster_78	cage_18_02_80523-T125958_flare_0001_25_75perc_c3
+cluster_79	cage_18_02_80523-T125958_flare_0002_25_75perc_c2
+cluster_80	cage_18_02_80523-T134617_flare_0001_25_75perc_c3
+cluster_81	cage_18_02_80523-T132535_flare_0001_25_75perc_c3
+cluster_82	cage_18_02_80523-T132535_flare_0002_25_75perc_c2
+cluster_83	cage_18_02_80523-T081926_flare_0003_25_75perc_c1
+cluster_84	cage_18_02_80523-T084245_flare_0003_25_75perc_c2

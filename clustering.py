@@ -28,7 +28,7 @@ to return a list of pairs with indices of flares that are defined as close to ea
 according to the closeness_param and threshold parameters. Can calculate closeness based
 on distance between footprint center or the fractional (%) shared area between the footprints.
 
-cluster_flowrate_vanilla: Clusters flares that have overlapping areas/are within a certain distance of each other
+cluster_flowrate_average_everything: Clusters flares that have overlapping areas/are within a certain distance of each other
 (this is done through get_close_flares) and calculates the total area and flowrate
 of each cluster. The function returns a dictionary with the cluster info. Based on method described in
 Veloso et al., 2015, doi: 10.1002/lom3.10024
@@ -58,6 +58,8 @@ import warnings
 import tkinter as tk
 import os
 #Set path to the folder where this script is located (to avoid cannot find conversion-error)
+path = r'C:\Users\kdo000\Dropbox\post_doc\Marie_project\src\flare_clustering'
+os.chdir(path)
 script_path = os.path.abspath(__file__)#path to script
 script_dir = os.path.dirname(script_path)#path to directory
 os.sys.path.append(script_dir)
@@ -486,7 +488,7 @@ def create_clusters(indices):
 
 ###############################################################################################
 
-def cluster_flowrate_vanilla(DFdata,UTM_X,UTM_Y,varstrings,indices):
+def cluster_flowrate_average_everything(DFdata,UTM_X,UTM_Y,varstrings,indices):
     '''
     Clusters flares that have overlapping areas/are within a certain distance of each other
     (this is done through a different function) and calculates the total area and flowrate
@@ -633,7 +635,7 @@ def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
     each flare observation and calculates the average where flare observation areas overlap.
     Sums up the results for each cluster.
 
-    The first part of this script is the same as the cluster_flowrate_vanilla function, since 
+    The first part of this script is the same as the cluster_flowrate_average_everything function, since 
     it essentially only defines the structure of the output dictionary and defines a
     grid. 
 
@@ -747,8 +749,6 @@ def cluster_flowrate_gridded_averaging(DFdata,UTM_X,UTM_Y,varstrings,indices):
         #Add a colorbar to the right of the subfigure
         cb = plt.colorbar(im2,fraction=0.046, pad=0.04)
 
-
-        
         #Position the colorbar on the right hand side of the plot
         plt.title('Average flux per unit area')
         plt.show()
@@ -963,7 +963,7 @@ def master_func(filepath,
         the threshold is the distance between the flare observation centerpoints in averaged acoustic footprint radii 
         of the two observations (Veloso et al., 2015, doi: 10.1002/lom3.10024) used 1.8R as the threshold).
     method: string
-        The method used to calculate the flowrate of the clusters. Options are 'vanilla' and 'gridded_averaging'.
+        The method used to calculate the flowrate of the clusters. Options are 'average_everything' and 'gridded_averaging'.
         Default: 'gridded_averaging'
     plot: boolean
         If True the function makes a plot of all the flares and the clusters.
@@ -993,9 +993,9 @@ def master_func(filepath,
 
     #Calculate the area, center location and flowrate of the clusters
 
-    #Check if the user wants to use the gridded averaging method or the vanilla method
-    if method == 'vanilla':
-        clusters = cluster_flowrate_vanilla(DFdata,
+    #Check if the user wants to use the gridded averaging method or the average_everything method
+    if method == 'average_everything':
+        clusters = cluster_flowrate_average_everything(DFdata,
                                     DFdata[varstrings['UTM_X']].values,
                                     DFdata[varstrings['UTM_Y']].values,
                                     varstrings,
@@ -1089,7 +1089,7 @@ if __name__ == '__main__':
 
     runGUI = True #Set to True to run the GUI version, False to run the non GUI version
 
-    if runGUI == True:
+    if runGUI == False:
 
         #######################################################
         ################# NON GUI VERSION #####################
@@ -1099,6 +1099,7 @@ if __name__ == '__main__':
         #Path to the excel file containing the flare data
         #PS: Don't use double backslashes, don't remove the r.
         filepath = r'filepath\filename.xlsx'
+        filepath = r'test_data\test_data.xlsx'
                 
         #Preferred method for clustering the flares. Options are 'distance' and 'area'
         closeness_param = 'distance' #can be 'area' or 'distance'
@@ -1114,7 +1115,7 @@ if __name__ == '__main__':
         master_func(filepath,
                     closeness_param,
                     threshold,
-                    method = 'vanilla',
+                    method = 'average_everything',
                     plot=True)
 
     ##################################################
@@ -1146,6 +1147,7 @@ if __name__ == '__main__':
         entry_filepath = tk.Entry(frame_input)
         entry_filepath.grid(row=0, column=1)
         #Make this field larger
+        entry_filepath.insert(0, 'test_data\\test_data.xlsx')
         entry_filepath.config(width=50)
 
         # Add a field for the closeness parameter
@@ -1171,6 +1173,14 @@ if __name__ == '__main__':
         #Create a default value
         entry_method.insert(0, 'gridded_average')
         entry_method.grid(row=3, column=1)
+
+        # Add a field for output data filename
+        #label_output = tk.Label(frame_input, text='Output filename:')
+        #label_output.grid(row=4, column=0)
+        #entry_output = tk.Entry(frame_input)
+        #Create a default value
+        #entry_output.insert(0, 'test_data\\test_data_clustered.xlsx')
+        #entry_output.grid(row=4, column=1)
 
         # Add a button to run the clustering algorithm
         button_run = tk.Button(frame_buttons, text='Run', command=run_clustering)
