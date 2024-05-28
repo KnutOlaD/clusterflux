@@ -13,12 +13,29 @@ knut.o.dolven@uit.no
 ##### WHAT IS IT #####
 ######################
 
-Clusters flare observations according to method described in 
-Veloso et al. (2015), doi: 10.1002/lom3.10024 , with some 
-added features. Sorts all the flares according to clusters. 
+A package that does flare clustering which is a necessary process in estimating 
+seabed gas flux using single beam echosounder data (see Veloso et al. (2015), 
+doi: 10.1002/lom3.10024). 
+The package includes:
+
+1. Automated flare clustering according to method described in 
+Veloso et al. (2015), doi: 10.1002/lom3.10024
+2. A new method for calcualting total flux from clusters called
+"Gridded averaging" which solves some issues with the original flux estimation
+solution.
+4. A method for estimating seep area using the acoustic footprint of the
+echosounder. Previously, only the accumulated acoustic footprint area have been used.
+5. The possibility of using the amount of overlapping seep area instead of just
+distance (which has been the conventional method) is also added. This comes into
+play when multiple seeps are overlapping (where seeps can be excluded even with a lot
+of overlapping area). There's an option is to choose between half-radius distance
+or percent overlapping area. I recommend using percent overlapping area as threshold.
+
+The package can use any input data following the standard output format from VBA-lab
+in ESP-3 or FlareHunter. Test_data is included. 
 Returns an excel sheet with the flowrate, area, and depth of 
 the clusters as well as a .txt file listing the name of flare 
-observations which were included in clusters and which flare 
+observations which were included in which clusters and which flare 
 observations were non-clustered (lonely flareas). 
 
 
@@ -49,7 +66,7 @@ threshold: The threshold that determines if two flare observations are to
 	closeness_param = 'distance' the threshold is the distance between '
 	the flares number of flare footprint radii.
 method: The chosen method for calculating the flowrate for the cluster. Can
-	be either 'vanilla' or 'gridded_average'. The vanilla method is 
+	be either 'legacy' or 'gridded_average'. The legacy method is 
 	described in Veloso et al., 2015 and gridded_average in the theory
 	document in this repository.
 
@@ -124,7 +141,7 @@ parameters. Can calculate closeness based on distance between
 footprint center or the fractional (%) shared area between 
 the footprints.
 
-cluster_flares_vanilla: Clusters flares that have overlapping 
+cluster_flares_legacy: Clusters flares that have overlapping 
 areas/are within a certain distance of each other (this is 
 done through get_close_flares) and calculates the total area 
 and flowrate of each cluster. The function returns a dictionary 
@@ -156,7 +173,7 @@ backslashe's if you're running windows, i.e. the path C:\Users\
 should be written C:\\Users\\.
 
 
-conversion.py: 
+conversion.py: (included to avoid dependency issues)
 --------------------------------------------------------------
 Copied from the utm package by Tobias Bieniek
 Bidirectional UTM-WGS84 converter for python
