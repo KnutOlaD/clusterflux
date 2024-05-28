@@ -13,12 +13,26 @@ knut.o.dolven@uit.no
 ##### WHAT IS IT #####
 ######################
 
-Clusters flare observations according to method described in 
-Veloso et al. (2015), doi: 10.1002/lom3.10024. Includes a new
-cluster flux estimate solution called Gridded Averaging, which 
-gives a more realistic flux estimate. Also includes a new method
-for estimating seep area using the acoustic footprint of the echosounder
-Sorts all flares according to clusters.  
+A package that does flare clustering which is a necessary process in estimating 
+seabed gas flux using single beam echosounder data (see Veloso et al. (2015), 
+doi: 10.1002/lom3.10024). 
+The package includes:
+
+1. Automated flare clustering according to method described in 
+Veloso et al. (2015), doi: 10.1002/lom3.10024
+2. A new method for calcualting total flux from clusters called
+"Gridded averaging" which solves some issues with the original flux estimation
+solution.
+4. A method for estimating seep area using the acoustic footprint of the
+echosounder. Previously, only the accumulated acoustic footprint area have been used.
+5. The possibility of using the amount of overlapping seep area instead of just
+distance (which has been the conventional method) is also added. This comes into
+play when multiple seeps are overlapping (where seeps can be excluded even with a lot
+of overlapping area). There's an option is to choose between half-radius distance
+or percent overlapping area. I recommend using percent overlapping area as threshold.
+
+The package can use any input data following the standard output format from VBA-lab
+in ESP-3 or FlareHunter. Test_data is included. 
 Returns an excel sheet with the flowrate, area, and depth of 
 the clusters as well as a .txt file listing the name of flare 
 observations which were included in which clusters and which flare 
