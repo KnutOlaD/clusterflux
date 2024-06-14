@@ -184,7 +184,7 @@ dependency issues.
 ## Acknowledgments
 
 - [Marie Stetzler](https://github.com/Marste5991) - For helping out with test data, explaining the manual proceedures in VBA-Lab/FlareHunter, initial testing and debugging
-- [Mario Veloso](@GEOMAR) - For reading theory, check of equations, discussing the concepts and providing insight into the original clustering process
+- [Mario Veloso](https://www.geomar.de/en/mveloso) - For reading theory, check of equations, discussing the concepts and providing insight into the original clustering process
 - [Benedicte Ferré](https://github.com/Beneferre) - For valuable discussions on use cases along the development path
 
 
