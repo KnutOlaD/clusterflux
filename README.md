@@ -1,6 +1,6 @@
 Clustering solution for flux estimates based on gas bubble
 stream observations in single beam echo-sounder data using
-ridded averaging
+gridded averaging
 
 Script for doing flare clustering of single beam echosounder 
 flare data. See theory.pdf for theory. 
