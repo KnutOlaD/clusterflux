@@ -10,10 +10,7 @@ Knut Ola Dølven
 knut.o.dolven@uit.no
 
 
-
-######################
-##### WHAT IS IT #####
-######################
+## What is it?
 
 A package that does flare clustering which is a necessary process in estimating 
 seabed gas flux using single beam echosounder data (see Veloso et al. (2015), 
@@ -172,13 +169,6 @@ the flare observations that were not clustered.
 backslashe's if you're running windows, i.e. the path C:\Users\
 should be written C:\\Users\\.
 
-## Acknowledgments
-
-- [Marie Stetzler](https://github.com/Marste5991) - For helping out with test data, explaining the manual proceedures in VBA-Lab/FlareHunter, initial testing and debugging
-- [Mario Veloso](@GEOMAR) - For reading theory, check of equations, discussing the concepts and providing insight into the original clustering process
-- [Benedicte Ferré](https://github.com/Beneferre) - For valuable discussions on use cases along the development path
-
-
 conversion.py: (included to avoid dependency issues)
 --------------------------------------------------------------
 Copied from the utm package by Tobias Bieniek
@@ -190,6 +180,13 @@ Source: https://pypi.org/project/utm/
 
 Copied from the python utm package to avoid any
 dependency issues.
+
+## Acknowledgments
+
+- [Marie Stetzler](https://github.com/Marste5991) - For helping out with test data, explaining the manual proceedures in VBA-Lab/FlareHunter, initial testing and debugging
+- [Mario Veloso](@GEOMAR) - For reading theory, check of equations, discussing the concepts and providing insight into the original clustering process
+- [Benedicte Ferré](https://github.com/Beneferre) - For valuable discussions on use cases along the development path
+
 
 
  
