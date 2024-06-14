@@ -9,11 +9,7 @@ Contact info:
 Knut Ola Dølven
 knut.o.dolven@uit.no
 
-## Acknowledgments
 
-- [Marie Stetzler](https://github.com/Marste5991) - For helping out with test data, explaining the manual proceedures in VBA-Lab/FlareHunter, initial testing and debugging
-- [Mario Veloso](@GEOMAR) - For reading theory, check of equations, discussing the concepts and providing insight into the original clustering process
-- [Benedicte Ferré](https://github.com/Beneferre) - For valuable discussions on use cases along the development path
 
 ######################
 ##### WHAT IS IT #####
@@ -45,9 +41,7 @@ observations which were included in which clusters and which flare
 observations were non-clustered (lonely flareas). 
 
 
-######################
-##### INITIATION #####
-######################
+## Initiation
 
 There are two initation options which is set by the 
 beginning of the INITIATION section in the clustering.py script 
@@ -85,10 +79,7 @@ and stores it in the same folder as filename. Creates a plot if plot=True.
 Creates a .txt file with the names of the flares in each cluster and the cluster 
 name and the names of the flares that were not clustered.
 
-
-####################
-##### CONTENTS #####
-####################
+## Contents
 
 clustering.py:
 -----------------------------------------------
@@ -109,8 +100,9 @@ but this can easily be changed within the code and
 support for various header and filetypes is easy to implement
 and will be implemented soon. 
 
-
-FUNCTIONS:
+#################
+### FUNCTIONS ###
+#################
 
 load_flare_data: Loads the FlareHunter/ESP3 excel 
 dataset. The excel file contains data from the
@@ -171,12 +163,20 @@ write_cluster_textfile: Writes a textfile listing all the
 flare observations included in each cluster as well as all 
 the flare observations that were not clustered.
 
-IMPORTANT NOTES: 
+#######################
+### IMPORTANT NOTES ###
+#######################
 
 1. In the GUI the strings should not have quotation marks 
 2. The path and filename of the excel file needs to have double 
 backslashe's if you're running windows, i.e. the path C:\Users\
 should be written C:\\Users\\.
+
+## Acknowledgments
+
+- [Marie Stetzler](https://github.com/Marste5991) - For helping out with test data, explaining the manual proceedures in VBA-Lab/FlareHunter, initial testing and debugging
+- [Mario Veloso](@GEOMAR) - For reading theory, check of equations, discussing the concepts and providing insight into the original clustering process
+- [Benedicte Ferré](https://github.com/Beneferre) - For valuable discussions on use cases along the development path
 
 
 conversion.py: (included to avoid dependency issues)
