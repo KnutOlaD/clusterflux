@@ -15,8 +15,8 @@ knut.o.dolven@uit.no
 For helping out with test data, explaining the manual proceedures in VBA-Lab/FlareHunter, initial testing and debugging
 [Mario Veloso](@GEOMAR) - 
 For reading theory, check of equations, discussing the concepts and providing insight into the original clustering process
-[Benedicte Ferré] - 
-For valuable discussions along the development path
+[Benedicte Ferré](https://github.com/Beneferre) - 
+For valuable discussions on use cases along the development path
 
 ######################
 ##### WHAT IS IT #####
